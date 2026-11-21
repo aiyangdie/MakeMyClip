@@ -1,0 +1,138 @@
+{
+  "video": "F:/AI_Clip_Lab/material/IMG_8886.MOV",
+  "duration_s": 29.7,
+  "cut_method": "固定间隔(场景切换不明显，按时间均分模拟剪辑点)",
+  "cuts_s": [
+    3.0,
+    6.0,
+    9.0,
+    12.0,
+    15.0,
+    18.0
+  ],
+  "shot_recognition": [
+    {
+      "shot": "产品整体亮相",
+      "caption": "米色柜体配台面与台灯整体展示",
+      "cues": [
+        "米色柜体与台面",
+        "台灯与柜体组合",
+        "柜体带抽屉和轮子"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 20.1,
+      "t": 1.5,
+      "idx": 0
+    },
+    {
+      "shot": "灯罩细节",
+      "caption": "米白色花瓣形灯罩，黑色金属支架",
+      "cues": [
+        "花瓣形灯罩设计",
+        "灯罩材质与结构",
+        "黑色金属支架造型"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 16.7,
+      "t": 4.5,
+      "idx": 1
+    },
+    {
+      "shot": "产品整体亮相",
+      "caption": "米色床头柜带抽屉和灯杆",
+      "cues": [
+        "米色柜体",
+        "双抽屉",
+        "金色拉手",
+        "顶部灯杆"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 16.7,
+      "t": 7.5,
+      "idx": 2
+    },
+    {
+      "shot": "拉手特写",
+      "caption": "手握金色拉手，展示抽屉开启细节",
+      "cues": [
+        "金色拉手设计",
+        "手部操作抽屉"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 16.4,
+      "t": 10.5,
+      "idx": 3
+    },
+    {
+      "shot": "拉手特写",
+      "caption": "金色圆形拉手特写，质感清晰",
+      "cues": [
+        "金色圆形拉手设计",
+        "拉手表面光滑有光泽"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 16.6,
+      "t": 13.5,
+      "idx": 4
+    },
+    {
+      "shot": "拉手特写",
+      "caption": "金色球形拉手特写，质感清晰",
+      "cues": [
+        "金色球形拉手设计",
+        "拉手表面反光质感"
+      ],
+      "quality": 0.8,
+      "worth_keeping": true,
+      "sec": 16.6,
+      "t": 16.5,
+      "idx": 5
+    }
+  ],
+  "timeline_plan": [
+    {
+      "storyboard": "产品整体亮相",
+      "source_ms": 1500,
+      "target_ms": 4000,
+      "caption": "米色柜体配台面与台灯整体展示",
+      "cues": [
+        "米色柜体与台面",
+        "台灯与柜体组合",
+        "柜体带抽屉和轮子"
+      ],
+      "quality": 0.8,
+      "confidence": 0.82
+    },
+    {
+      "storyboard": "拉手特写",
+      "source_ms": 10500,
+      "target_ms": 2000,
+      "caption": "手握金色拉手，展示抽屉开启细节",
+      "cues": [
+        "金色拉手设计",
+        "手部操作抽屉"
+      ],
+      "quality": 0.8,
+      "confidence": 0.82
+    },
+    {
+      "storyboard": "灯罩细节",
+      "source_ms": 4500,
+      "target_ms": 2500,
+      "caption": "米白色花瓣形灯罩，黑色金属支架",
+      "cues": [
+        "花瓣形灯罩设计",
+        "灯罩材质与结构",
+        "黑色金属支架造型"
+      ],
+      "quality": 0.8,
+      "confidence": 0.82
+    }
+  ],
+  "total_target_ms": 8500
+}
