@@ -105,16 +105,18 @@ class SemanticWorker(QThread):
     """对候选片段逐条做视觉识别 + 质量评分（阶段三）。
 
     items: [(clip_id, asset_path, start_ms, end_ms), ...]
+    calibration: 可选，人工评分拟合的校准模型；有则自动分会贴近人的偏好。
     全程可取消；单片段失败只记录错误，不中断整批。
     """
     progress = Signal(int, int, str)        # 当前, 总数, 文件名
     one_done = Signal(int, dict, dict)      # clip_id, vision, quality
     all_done = Signal(int, int)             # 成功, 失败
 
-    def __init__(self, items, provider_name=None, parent=None):
+    def __init__(self, items, provider_name=None, calibration=None, parent=None):
         super().__init__(parent)
         self.items = list(items)
         self.provider = vision_provider.provider_factory(provider_name)
+        self.calibration = calibration
         self._abort = False
 
     def stop(self):
@@ -130,7 +132,8 @@ class SemanticWorker(QThread):
             self.progress.emit(i, total, name)
             try:
                 vision = self.provider.analyze_segment(path, start_ms, end_ms)
-                quality = quality_scorer.score_segment(path, start_ms, end_ms)
+                quality = quality_scorer.score_segment(
+                    path, start_ms, end_ms, calibration=self.calibration)
                 if not vision.get("ok") or not quality.get("ok"):
                     fail += 1
                 else:
