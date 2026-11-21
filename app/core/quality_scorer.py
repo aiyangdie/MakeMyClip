@@ -26,6 +26,11 @@ DIM_NAMES = {
     "sharpness": "清晰度", "exposure": "曝光", "stability": "稳定性",
     "composition": "构图", "cleanliness": "画面干净度", "occlusion": "无遮挡",
 }
+# 默认权重（无人评分校准时使用）；校准时可由 score_calibrator 替换加权方式
+DEFAULT_WEIGHTS = {
+    "sharpness": 0.28, "exposure": 0.22, "stability": 0.20,
+    "composition": 0.15, "cleanliness": 0.10, "occlusion": 0.05,
+}
 
 
 def _clamp(x):
@@ -56,19 +61,25 @@ def _sample(path, start_ms, end_ms, interval_ms=300, max_n=24):
     return out
 
 
-def score_segment(path, start_ms, end_ms):
+def score_segment(path, start_ms, end_ms, calibration=None):
     """给单个候选片段打分，返回：
     {
       'ok':bool, 'error':str,
       'scores': {dim: 0-100}, 'total': 0-100, 'grade': 等级,
       'detail': {dim: 依据说明}, 'metrics': {...},
-      'disclaimer': 说明这是图像信号估计，非验证过的AI准确率
+      'disclaimer': 说明这是图像信号估计，非验证过的AI准确率,
+      'raw_total': 启发式原始总分（校准前）,
+      'calibrated': 是否已用人评分校准,
     }
+
+    calibration: 可选，score_calibrator.fit_calibration 产出的模型；
+    有足够人工标签时会把 total 调成更贴近人的偏好。
     """
     res = {
         "ok": False, "error": "", "scores": {}, "total": 0,
         "grade": "", "detail": {}, "metrics": {},
         "disclaimer": "图像信号启发式估计，仅用于排序参考，非经验证的AI准确率",
+        "raw_total": 0, "calibrated": False,
     }
     frames = _sample(path, start_ms, end_ms)
     if len(frames) < 2:
@@ -129,9 +140,8 @@ def score_segment(path, start_ms, end_ms):
         "stability": round(s_stability), "composition": round(s_composition),
         "cleanliness": round(s_clean), "occlusion": round(s_occlusion),
     }
-    # 总分：清晰度/曝光/稳定性权重高一些
-    weights = {"sharpness": 0.28, "exposure": 0.22, "stability": 0.20,
-               "composition": 0.15, "cleanliness": 0.10, "occlusion": 0.05}
+    # 总分：清晰度/曝光/稳定性权重高一些（默认权重；校准可在其后改写 total）
+    weights = DEFAULT_WEIGHTS
     total = round(sum(scores[d] * weights[d] for d in DIMENSIONS))
 
     if total >= 90:
@@ -156,6 +166,7 @@ def score_segment(path, start_ms, end_ms):
     res["ok"] = True
     res["scores"] = scores
     res["total"] = total
+    res["raw_total"] = total
     res["grade"] = grade
     res["detail"] = detail
     res["metrics"] = {
@@ -164,6 +175,9 @@ def score_segment(path, start_ms, end_ms):
         "motion_mean": round(motion, 4), "edge_density": round(edge, 4),
         "skin_ratio": round(skin, 4), "sample_frames": len(frames),
     }
+    if calibration:
+        from . import score_calibrator
+        return score_calibrator.apply_calibration(res, calibration)
     return res
 
 
@@ -173,4 +187,7 @@ def format_scores(score_result):
         return f"评分失败：{score_result.get('error','')}"
     s = score_result["scores"]
     parts = [f"{DIM_NAMES[k]}{s[k]}" for k in DIMENSIONS]
-    return f"总分{score_result['total']}({score_result['grade']})｜" + " ".join(parts)
+    line = f"总分{score_result['total']}({score_result['grade']})｜" + " ".join(parts)
+    if score_result.get("calibrated") and score_result.get("raw_total") is not None:
+        line += f"｜校准前{score_result['raw_total']}"
+    return line

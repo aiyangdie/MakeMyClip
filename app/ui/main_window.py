@@ -228,13 +228,23 @@ class MainWindow(QMainWindow):
         form = QFormLayout()
         self.clip_start = QLineEdit(); self.clip_end = QLineEdit()
         self.clip_note = QLineEdit(); self.clip_note.setPlaceholderText("人工备注/修正说明")
+        self.clip_human_rating = QSpinBox()
+        self.clip_human_rating.setRange(0, 100)
+        self.clip_human_rating.setValue(70)
+        self.clip_human_rating.setToolTip(
+            "人工质量分 0–100。攒够 3 条后会校准自动评分，选片更贴近你的偏好。")
         b_apply_time = QPushButton("应用起止时间(秒)")
         b_apply_time.clicked.connect(self._apply_clip_time)
         form.addRow("开始(秒):", self.clip_start)
         form.addRow("结束(秒):", self.clip_end)
         form.addRow("备注:", self.clip_note)
+        form.addRow("人工评分:", self.clip_human_rating)
         rv.addLayout(form)
         rv.addWidget(b_apply_time)
+        b_rate = QPushButton("保存人工评分并校准自动分")
+        b_rate.setToolTip("把本片段的人工分当标签；样本≥3 后自动分会校准，并刷新选片用的质量分")
+        b_rate.clicked.connect(self._save_human_rating)
+        rv.addWidget(b_rate)
         b_verify = QPushButton("标记为已核验")
         b_verify.clicked.connect(self._verify_clip)
         b_reject = QPushButton("标记为需要人工选择")
@@ -385,7 +395,9 @@ class MainWindow(QMainWindow):
         self.analysis_progress.setVisible(True)
         self.analysis_progress.setRange(0, len(items))
         task_id = self.db.add_task("AI识别评分", input_file=f"{len(items)} 个片段")
-        w = SemanticWorker(items, parent=self)
+        # 已有人工评分时，用校准模型让自动分贴近人的偏好
+        calib = self.db.get_score_calibration()
+        w = SemanticWorker(items, calibration=calib, parent=self)
         self.semantic_worker = w
 
         def on_prog(cur, total, name):
@@ -443,13 +455,27 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
         if c.get("quality_total"):
-            lines.append(f'【质量】{format_scores(json.loads(c.get("score_text") or "{}"))}')
+            try:
+                lines.append(f'【质量】{format_scores(json.loads(c.get("score_text") or "{}"))}')
+            except Exception:
+                lines.append(f'【质量】总分{c.get("quality_total")}')
+            if c.get("quality_raw_total") and c.get("quality_raw_total") != c.get("quality_total"):
+                lines.append(f'  校准前启发式总分：{c.get("quality_raw_total")}')
+        if c.get("human_rating") is not None:
+            note = c.get("human_rating_note") or ""
+            lines.append(f'【人工评分】{c.get("human_rating")}' + (f' — {note}' if note else ""))
         try:
             review = json.loads(c.get("vision_metrics") or "{}").get("review_reasons", [])
             if review:
                 lines.append("【需人工核验】")
                 for r in review:
                     lines.append(f"  · {r}")
+        except Exception:
+            pass
+        try:
+            hr = c.get("human_rating")
+            if hr is not None:
+                self.clip_human_rating.setValue(int(hr))
         except Exception:
             pass
         self.clip_detail.setPlainText("\n".join(lines) if lines else "尚未做 AI 识别，点上方『AI 识别+评分』")
@@ -492,6 +518,40 @@ class MainWindow(QMainWindow):
 
     def _verify_clip(self):
         self._set_clip_status("已确认")
+
+    def _save_human_rating(self):
+        """把当前片段的人工分写入项目，并重建自动分校准。"""
+        cid = getattr(self, "_current_clip_id", None)
+        if not cid:
+            QMessageBox.information(self, "提示", "请先选择一个片段")
+            return
+        if not self._require_db():
+            return
+        rating = int(self.clip_human_rating.value())
+        note = self.clip_note.text().strip()
+        ok, msg, model = self.db.save_human_rating(cid, rating, note)
+        if not ok:
+            QMessageBox.warning(self, "保存失败", msg)
+            return
+        self.db.touch_modified()
+        self.refresh_analysis()
+        # 重新选中当前行以刷新右侧明细（人工分 / 校准前后总分）
+        t = getattr(self, "clip_table", None)
+        if t is not None and hasattr(self, "clips_cache"):
+            for row, c in enumerate(self.clips_cache):
+                if c.get("id") == cid:
+                    t.selectRow(row)
+                    self._clip_selected(t.model().index(row, 0))
+                    break
+        n = (model or {}).get("n_samples", 0)
+        calibrated = bool((model or {}).get("ok"))
+        tip = msg
+        if calibrated:
+            tip += f"（已用 {n} 条人工分校准自动评分）"
+        else:
+            tip += f"（已攒 {n} 条，满 3 条后开始校准）"
+        self.status.showMessage(tip)
+        QMessageBox.information(self, "人工评分已保存", tip)
 
     def _set_clip_status(self, status):
         cid = getattr(self, "_current_clip_id", None)

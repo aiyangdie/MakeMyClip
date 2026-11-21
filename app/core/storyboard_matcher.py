@@ -50,6 +50,13 @@ def _cues_of(clip):
 
 
 def _parse_quality(clip):
+    # 有人工评分时直接用人分（标签优先）；否则用校准后的自动分 quality_total
+    hr = clip.get("human_rating")
+    if hr is not None:
+        try:
+            return int(hr)
+        except (TypeError, ValueError):
+            pass
     sj = clip.get("score_text") or ""  # 兼容：质量明细存 score_text
     total = clip.get("quality_total")
     if total is None:
