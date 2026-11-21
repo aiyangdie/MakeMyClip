@@ -228,18 +228,18 @@ class WorkspaceWindow(QMainWindow):
         self.page_workspace.status_message.connect(self._on_status)
 
         self.page_storyboard = PlaceholderPage(
-            "剪辑方案",
-            "本页将在阶段 C 实现",
-            "计划包含：横向时间轴、镜头顺序调整、片段替换、裁剪范围修改、\n"
-            "锁定已确认镜头、局部修改与撤销、修改前后记录。\n"
-            "本阶段只搭骨架，不做界面，避免半成品误导。",
+            "剪辑方案（实验壳 · 未接通）",
+            "请改用「完整工作台」或「五步向导」",
+            "本三页工作台目前只有「素材」页接真实项目库。\n"
+            "剪辑时间轴 / 换镜 / 锁定请打开：python main.py\n"
+            "新手出片请打开：python main_wizard.py\n"
+            "避免三套入口并行造成「点了没反应」的误解。",
             self._dark)
         self.page_preview = PlaceholderPage(
-            "预览与导出",
-            "本页将在阶段 D 实现",
-            "计划包含：成片预览、字幕与音乐配置、导出前自检、\n"
-            "复用既有 ExportWorker 与 final_exporter 完成真实导出与文件校验。\n"
-            "本阶段不接入导出，避免在未验证的情况下改动导出链。",
+            "预览与导出（实验壳 · 未接通）",
+            "请改用「完整工作台 → 导出」或向导第 5 步",
+            "真实导出链在 main.py / main_wizard.py 的 ExportWorker 与 final_exporter。\n"
+            "本页仅为骨架占位，不会写出成片。",
             self._dark)
 
         for p in (self.page_workspace, self.page_storyboard, self.page_preview):

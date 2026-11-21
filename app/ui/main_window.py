@@ -182,7 +182,8 @@ class MainWindow(QMainWindow):
         self.btn_cancel_analysis.setEnabled(False)
         self.btn_dedup = QPushButton("检测重复素材")
         self.btn_dedup.clicked.connect(self.start_dedup)
-        self.btn_semantic = QPushButton("▶ AI 识别+评分")
+        self.btn_semantic = QPushButton("▶ 基础画面测量+评分")
+        self.btn_semantic.setToolTip("默认 OpenCV 启发式；若已配置并启动本地视觉模型，将优先用模型，失败则降级")
         self.btn_semantic.clicked.connect(self.start_semantic)
         h.addWidget(self.btn_analyze); h.addWidget(self.btn_cancel_analysis)
         h.addWidget(self.btn_semantic); h.addWidget(self.btn_dedup)
@@ -192,22 +193,29 @@ class MainWindow(QMainWindow):
         self.analysis_progress.setVisible(False)
         v.addWidget(self.analysis_progress)
         self.semantic_note = QLabel(
-            "说明：AI 识别为本地图像信号启发式（不联网、不臆造），只报告画面可测的线索并标置信度；"
-            "不能确认的语义（拉手/灯罩/材质/完整动作）需人工核验或后续接入视觉模型。")
+            "说明：默认是基础画面测量（清晰度/曝光/运动等，不联网），不是「已看懂商品卖点」。"
+            "接上本地视觉模型后才会做语义识别；看不准会标需核验。"
+            "实用建议：先测量，再对关键镜头点「好片/一般/差片」，满 3 条后质量分更贴近你的偏好。")
         self.semantic_note.setWordWrap(True)
         self.semantic_note.setStyleSheet("color:#666;font-size:11px;padding:4px;")
         v.addWidget(self.semantic_note)
+        self.calib_status = QLabel("人工校准：打开项目后显示进度")
+        self.calib_status.setWordWrap(True)
+        self.calib_status.setStyleSheet(
+            "color:#333;font-size:12px;padding:6px 8px;background:#f0f4f8;border:1px solid #d0d7de;")
+        v.addWidget(self.calib_status)
 
         split = QSplitter(Qt.Horizontal)
         # 左：候选片段列表
         self.clip_table = QTableWidget()
-        self.clip_table.setColumnCount(9)
+        self.clip_table.setColumnCount(10)
         self.clip_table.setHorizontalHeaderLabels(
-            ["来源素材", "镜头#", "开始", "结束", "时长", "置信度", "视觉线索", "质量分", "核验状态/切镜原因"])
+            ["来源素材", "镜头#", "开始", "结束", "时长", "置信度", "视觉线索",
+             "质量分", "人工分", "核验状态/切镜原因"])
         self.clip_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.clip_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.clip_table.horizontalHeader().setSectionResizeMode(6, QHeaderView.ResizeToContents)
-        self.clip_table.horizontalHeader().setSectionResizeMode(8, QHeaderView.Stretch)
+        self.clip_table.horizontalHeader().setSectionResizeMode(9, QHeaderView.Stretch)
         self.clip_table.itemClicked.connect(self._clip_selected)
         split.addWidget(self.clip_table)
 
@@ -228,13 +236,34 @@ class MainWindow(QMainWindow):
         form = QFormLayout()
         self.clip_start = QLineEdit(); self.clip_end = QLineEdit()
         self.clip_note = QLineEdit(); self.clip_note.setPlaceholderText("人工备注/修正说明")
+        self.clip_human_rating = QSpinBox()
+        self.clip_human_rating.setRange(0, 100)
+        self.clip_human_rating.setValue(70)
+        self.clip_human_rating.setToolTip(
+            "人工质量分 0–100。也可直接点下方「好片/一般/差片」一键打分。")
         b_apply_time = QPushButton("应用起止时间(秒)")
         b_apply_time.clicked.connect(self._apply_clip_time)
         form.addRow("开始(秒):", self.clip_start)
         form.addRow("结束(秒):", self.clip_end)
         form.addRow("备注:", self.clip_note)
+        form.addRow("人工评分:", self.clip_human_rating)
         rv.addLayout(form)
         rv.addWidget(b_apply_time)
+        # 快捷评分：实操比拖数字快，直接驱动校准
+        from ..core import score_calibrator as _sc
+        quick = QHBoxLayout()
+        quick.addWidget(QLabel("快捷："))
+        for label, score in _sc.QUICK_RATINGS:
+            btn = QPushButton(f"{label}({score})")
+            btn.setToolTip(f"本片段记 {score} 分并立即校准自动分")
+            btn.clicked.connect(lambda _=False, s=score: self._quick_human_rating(s))
+            quick.addWidget(btn)
+        quick.addStretch()
+        rv.addLayout(quick)
+        self.btn_save_rating = QPushButton("保存人工评分并校准自动分")
+        self.btn_save_rating.setToolTip("把本片段的人工分当标签；样本≥3 后自动分会校准，并刷新选片用的质量分")
+        self.btn_save_rating.clicked.connect(self._save_human_rating)
+        rv.addWidget(self.btn_save_rating)
         b_verify = QPushButton("标记为已核验")
         b_verify.clicked.connect(self._verify_clip)
         b_reject = QPushButton("标记为需要人工选择")
@@ -260,6 +289,7 @@ class MainWindow(QMainWindow):
     def refresh_analysis(self):
         if not self.db:
             self.clip_table.setRowCount(0)
+            self._refresh_calib_status()
             return
         assets = {a["id"]: a for a in self.db.get_assets()}
         clips = self.db.get_clips()
@@ -285,24 +315,61 @@ class MainWindow(QMainWindow):
                                      for l in vlabels if l.get("code"))[:40]
             except Exception:
                 cues_text = ""
-            q_total = c.get("quality_total") or 0
-            quality_text = f"{q_total}" if q_total else "—"
+            q_total = c.get("quality_total")
+            if q_total is None:
+                quality_text = "—"
+            else:
+                quality_text = str(q_total)
+            hr = c.get("human_rating")
+            human_text = "—" if hr is None or hr == "" else str(hr)
             vals = [
                 a.get("filename", "?"), str(c.get("shot_index", "")),
                 f'{c["start_ms"]/1000:.1f}', f'{c["end_ms"]/1000:.1f}',
                 f"{dur:.1f}", f'{c.get("confidence",0):.2f}',
-                cues_text, quality_text, display,
+                cues_text, quality_text, human_text, display,
             ]
             for col, val in enumerate(vals):
                 item = QTableWidgetItem(val)
                 if c.get("confidence", 0) < 0.5 and col == 5:
                     item.setForeground(Qt.red)  # 低置信度=疑似灯光变化，需核验
-                if col == 7 and q_total:
-                    if q_total < 60:
-                        item.setForeground(Qt.red)
-                    elif q_total >= 80:
-                        item.setForeground(Qt.darkGreen)
+                if col == 7 and q_total is not None:
+                    try:
+                        qt = int(q_total)
+                        if qt < 60:
+                            item.setForeground(Qt.red)
+                        elif qt >= 80:
+                            item.setForeground(Qt.darkGreen)
+                    except (TypeError, ValueError):
+                        pass
+                if col == 8 and hr is not None and hr != "":
+                    item.setForeground(Qt.darkBlue)
                 t.setItem(row, col, item)
+        self._refresh_calib_status()
+
+    def _refresh_calib_status(self):
+        lab = getattr(self, "calib_status", None)
+        if lab is None:
+            return
+        if not self.db:
+            lab.setText("人工校准：未打开项目")
+            return
+        try:
+            st = self.db.calibration_status()
+            lab.setText(st.get("line") or "")
+            if st.get("ok"):
+                lab.setStyleSheet(
+                    "color:#0b3d0b;font-size:12px;padding:6px 8px;"
+                    "background:#e8f5e9;border:1px solid #a5d6a7;")
+            elif st.get("n_labeled", 0) > 0:
+                lab.setStyleSheet(
+                    "color:#5c4a00;font-size:12px;padding:6px 8px;"
+                    "background:#fff8e1;border:1px solid #ffe082;")
+            else:
+                lab.setStyleSheet(
+                    "color:#333;font-size:12px;padding:6px 8px;"
+                    "background:#f0f4f8;border:1px solid #d0d7de;")
+        except Exception as e:  # noqa: BLE001
+            lab.setText(f"人工校准：状态读取失败（{e}）")
 
     def start_analysis(self):
         if not self._require_db():
@@ -385,7 +452,12 @@ class MainWindow(QMainWindow):
         self.analysis_progress.setVisible(True)
         self.analysis_progress.setRange(0, len(items))
         task_id = self.db.add_task("AI识别评分", input_file=f"{len(items)} 个片段")
-        w = SemanticWorker(items, parent=self)
+        # 已有人工评分时，用校准模型让自动分贴近人的偏好；
+        # holder 可在评分中途被人工评分回调刷新，避免整批都用陈旧快照
+        calib = self.db.get_score_calibration()
+        self._calib_holder = {"model": calib}
+        w = SemanticWorker(items, calibration=calib,
+                           calibration_holder=self._calib_holder, parent=self)
         self.semantic_worker = w
 
         def on_prog(cur, total, name):
@@ -442,8 +514,21 @@ class MainWindow(QMainWindow):
                         lines.append(f'      依据：{l.get("evidence")}')
         except Exception:
             pass
-        if c.get("quality_total"):
-            lines.append(f'【质量】{format_scores(json.loads(c.get("score_text") or "{}"))}')
+        if c.get("quality_total") is not None:
+            try:
+                st = json.loads(c.get("score_text") or "{}")
+                if st:
+                    lines.append(f'【质量】{format_scores(st)}')
+                else:
+                    lines.append(f'【质量】总分{c.get("quality_total")}')
+            except Exception:
+                lines.append(f'【质量】总分{c.get("quality_total")}')
+            raw_q = c.get("quality_raw_total")
+            if raw_q is not None and raw_q != c.get("quality_total"):
+                lines.append(f'  校准前启发式总分：{raw_q}')
+        if c.get("human_rating") is not None:
+            note = c.get("human_rating_note") or ""
+            lines.append(f'【人工评分】{c.get("human_rating")}' + (f' — {note}' if note else ""))
         try:
             review = json.loads(c.get("vision_metrics") or "{}").get("review_reasons", [])
             if review:
@@ -452,6 +537,15 @@ class MainWindow(QMainWindow):
                     lines.append(f"  · {r}")
         except Exception:
             pass
+        # 切换片段时同步 SpinBox：有人分用其人分，否则回到默认 70，避免误把上一条分存到下一条
+        try:
+            hr = c.get("human_rating")
+            if hr is not None and hr != "":
+                self.clip_human_rating.setValue(int(hr))
+            else:
+                self.clip_human_rating.setValue(70)
+        except Exception:
+            self.clip_human_rating.setValue(70)
         self.clip_detail.setPlainText("\n".join(lines) if lines else "尚未做 AI 识别，点上方『AI 识别+评分』")
 
     def _play_selected_clip(self):
@@ -493,6 +587,76 @@ class MainWindow(QMainWindow):
     def _verify_clip(self):
         self._set_clip_status("已确认")
 
+    def _quick_human_rating(self, score: int):
+        """一键好片/一般/差片：写入 SpinBox 后走统一保存逻辑。"""
+        self.clip_human_rating.setValue(int(score))
+        self._save_human_rating(ask_rematch=True)
+
+    def _save_human_rating(self, ask_rematch=True):
+        """把当前片段的人工分写入项目，并重建自动分校准。"""
+        cid = getattr(self, "_current_clip_id", None)
+        if not cid:
+            QMessageBox.information(self, "提示", "请先选择一个片段")
+            return
+        if not self._require_db():
+            return
+        # 防连点：重建校准可能扫全库，主线程执行时先禁用按钮
+        b_rate = getattr(self, "btn_save_rating", None)
+        if b_rate is not None:
+            if not b_rate.isEnabled():
+                return
+            b_rate.setEnabled(False)
+        just_became_ready = False
+        try:
+            rating = int(self.clip_human_rating.value())
+            note = self.clip_note.text().strip()
+            before_ok = bool((self.db.get_score_calibration() or {}).get("ok"))
+            ok, msg, model = self.db.save_human_rating(cid, rating, note)
+            if not ok:
+                QMessageBox.warning(self, "保存失败", msg)
+                return
+            after_ok = bool((model or {}).get("ok"))
+            just_became_ready = (not before_ok) and after_ok
+            # 若 AI 评分线程还在跑，刷新其校准快照
+            holder = getattr(self, "_calib_holder", None)
+            if isinstance(holder, dict):
+                holder["model"] = model
+            self.db.touch_modified()
+            self.refresh_analysis()
+            # 重新选中当前行以刷新右侧明细（人工分 / 校准前后总分）
+            t = getattr(self, "clip_table", None)
+            if t is not None and hasattr(self, "clips_cache"):
+                for row, c in enumerate(self.clips_cache):
+                    if c.get("id") == cid:
+                        t.selectRow(row)
+                        self._clip_selected(t.model().index(row, 0))
+                        break
+            n = (model or {}).get("n_samples", 0)
+            calibrated = bool((model or {}).get("ok"))
+            tip = msg
+            if calibrated:
+                tip += f"（已用 {n} 条人工分校准自动评分）"
+            else:
+                tip += f"（已攒 {n} 条，满 3 条后开始校准）"
+            self.status.showMessage(tip)
+            # 校准刚生效或用户主动保存后：闭环问是否重跑选片（实用性关键）
+            do_rematch = False
+            if ask_rematch and calibrated:
+                prompt = tip + "\n\n是否按新质量分重新自动选片？（锁定/已确认镜头不会被改）"
+                if just_became_ready:
+                    prompt = "校准已生效！\n\n" + prompt
+                ans = QMessageBox.question(
+                    self, "人工评分已保存", prompt,
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                do_rematch = ans == QMessageBox.Yes
+            else:
+                QMessageBox.information(self, "人工评分已保存", tip)
+            if do_rematch:
+                self.auto_match_storyboards()
+        finally:
+            if b_rate is not None:
+                b_rate.setEnabled(True)
+
     def _set_clip_status(self, status):
         cid = getattr(self, "_current_clip_id", None)
         if not cid:
@@ -533,11 +697,13 @@ class MainWindow(QMainWindow):
         self.btn_match = b_match
         b_apply = QPushButton("应用最佳候选到分镜")
         b_apply.clicked.connect(self.apply_match_selection)
+        b_miss = QPushButton("导出缺片补拍清单")
+        b_miss.clicked.connect(self._export_missing_list)
         b_add.clicked.connect(self.add_storyboard)
         b_del.clicked.connect(self.delete_storyboard)
         b_up.clicked.connect(lambda: self.move_storyboard(-1))
         b_down.clicked.connect(lambda: self.move_storyboard(1))
-        for b in (b_add, b_del, b_up, b_down, b_match, b_apply):
+        for b in (b_add, b_del, b_up, b_down, b_match, b_apply, b_miss):
             h.addWidget(b)
         v.addLayout(h)
         self.match_hint = QLabel(
@@ -1688,8 +1854,10 @@ class MainWindow(QMainWindow):
             a = assets.get(c["asset_id"], {})
             c["filename"] = a.get("filename", "?")
         sbs = self.db.get_storyboards()
-        results = storyboard_matcher.match_all(sbs, analyzed)
+        tpl = self.db.get_storyboard_template_path()
+        results = storyboard_matcher.match_all(sbs, analyzed, template_path=tpl)
         self.db.save_match_results(results)
+        self.db.add_edit_history("auto_match", tpl, {"n": len(results)}, "自动匹配分镜")
         self.match_results = results
         self.refresh_storyboards()
         missing = sum(1 for r in results.values() if r.get("missing"))
@@ -1712,6 +1880,22 @@ class MainWindow(QMainWindow):
         n = self.db.apply_match_selection(results)
         self.refresh_storyboards()
         self.status.showMessage(f"已将 {n} 个分镜设为候选待核验（锁定镜头未被改动）")
+
+    def _export_missing_list(self):
+        if not self._require_db():
+            return
+        from ..core import missing_export
+        results = getattr(self, "match_results", None) or self.db.get_match_results()
+        if not results:
+            QMessageBox.information(self, "提示", "请先点『自动匹配分镜』生成结果")
+            return
+        out_dir = config.EXPORT_DIR / "missing_lists"
+        txt, csv_path = missing_export.export_missing(
+            results, str(out_dir), storyboards=self.db.get_storyboards())
+        QMessageBox.information(
+            self, "已导出",
+            f"缺片清单：\n{txt or '(无 txt)'}\n{csv_path or '(无 csv)'}")
+        self.status.showMessage("缺片补拍清单已导出")
 
     def _candidate_selected(self, item):
         sb_id = getattr(self, "_current_sb_id", None)

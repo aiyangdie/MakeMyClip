@@ -1,0 +1,21 @@
+{
+  "provider": "heuristic_local_v1",
+  "local": {
+    "name": "ollama_qwen_vl",
+    "base_url": "http://127.0.0.1:11434",
+    "model": "qwen3-vl:4b-instruct-q4_K_M",
+    "timeout_sec": 120,
+    "sample_interval_ms": 800,
+    "max_samples": 12,
+    "allow_upload": false
+  },
+  "cloud": {
+    "enabled": false,
+    "base_url": "",
+    "api_key": "",
+    "model": "",
+    "cost_cap_cny": 0,
+    "allow_upload": false
+  },
+  "fallback": "heuristic_local_v1"
+}

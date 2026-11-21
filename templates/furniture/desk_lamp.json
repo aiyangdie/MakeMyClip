@@ -1,0 +1,42 @@
+{
+  "product_type": "台灯/桌灯",
+  "version": "1.0",
+  "note": "第二套家具类目模板（Phase C）。复制修改即可扩展新品类。required_cues 任一命中即内容相关；证据不足标需核验。",
+  "cue_aliases": {
+    "整体": ["subject_whole"],
+    "细节": ["subject_close"],
+    "开关": ["hand", "motion"],
+    "调光": ["light_switch", "color_temperature", "light_states"],
+    "色温": ["color_temperature", "light_switch"],
+    "调节": ["reciprocating", "motion"],
+    "旋转": ["reciprocating", "motion"]
+  },
+  "storyboards": [
+    {"name": "产品整体亮相", "required_cues": ["subject_whole"], "allow_missing": false, "min_quality": 55,
+     "advice": "补拍：台灯完整正面，主体居中。"},
+    {"name": "灯罩细节", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：灯罩近景；材质需人工确认。"},
+    {"name": "灯杆/支架", "required_cues": ["subject_close", "reciprocating"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：展示支架结构或调节动作。"},
+    {"name": "灯头调节", "required_cues": ["reciprocating"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：完整调节动作，勿用静态冒充。"},
+    {"name": "开关操作", "required_cues": ["hand"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：手指操作开关近景。"},
+    {"name": "色温/亮度切换", "required_cues": ["light_switch"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：固定机位切换灯光并停留。"},
+    {"name": "使用场景", "required_cues": ["subject_whole"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：桌面使用环境整体画面。"},
+    {"name": "整体收尾", "required_cues": ["subject_whole"], "allow_missing": false, "min_quality": 55,
+     "advice": "补拍：与开场不同角度的稳定定格。"}
+  ],
+  "shot_targets": {
+    "产品整体亮相": 4000,
+    "灯罩细节": 2500,
+    "灯杆/支架": 3000,
+    "灯头调节": 4000,
+    "开关操作": 2500,
+    "色温/亮度切换": 6000,
+    "使用场景": 3500,
+    "整体收尾": 3000
+  }
+}

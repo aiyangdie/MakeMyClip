@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """后台任务：用 QThread 执行耗时操作，避免阻塞界面。"""
+from pathlib import Path
+
 from PySide6.QtCore import QThread, Signal
 
 from . import media
@@ -105,20 +107,33 @@ class SemanticWorker(QThread):
     """对候选片段逐条做视觉识别 + 质量评分（阶段三）。
 
     items: [(clip_id, asset_path, start_ms, end_ms), ...]
+    calibration: 可选，人工评分拟合的校准模型；有则自动分会贴近人的偏好。
+    calibration_holder: 可选 dict，键 'model'；主线程更新后本线程下一条片段可读到新模型，
+                        减轻「评分中途又存人工分」导致的陈旧快照问题。
     全程可取消；单片段失败只记录错误，不中断整批。
     """
     progress = Signal(int, int, str)        # 当前, 总数, 文件名
     one_done = Signal(int, dict, dict)      # clip_id, vision, quality
     all_done = Signal(int, int)             # 成功, 失败
 
-    def __init__(self, items, provider_name=None, parent=None):
+    def __init__(self, items, provider_name=None, calibration=None,
+                 calibration_holder=None, parent=None):
         super().__init__(parent)
         self.items = list(items)
-        self.provider = vision_provider.provider_factory(provider_name)
+        # 按 vision.json 选 Provider；VLM 未就绪时 factory 内部降级启发式
+        self.provider = vision_provider.provider_factory(provider_name, prefer_config=True)
+        self.calibration = calibration
+        self.calibration_holder = calibration_holder  # mutable {"model": ...}
         self._abort = False
 
     def stop(self):
         self._abort = True
+
+    def _current_calibration(self):
+        h = self.calibration_holder
+        if isinstance(h, dict) and "model" in h:
+            return h.get("model")
+        return self.calibration
 
     def run(self):
         ok = fail = 0
@@ -130,7 +145,8 @@ class SemanticWorker(QThread):
             self.progress.emit(i, total, name)
             try:
                 vision = self.provider.analyze_segment(path, start_ms, end_ms)
-                quality = quality_scorer.score_segment(path, start_ms, end_ms)
+                quality = quality_scorer.score_segment(
+                    path, start_ms, end_ms, calibration=self._current_calibration())
                 if not vision.get("ok") or not quality.get("ok"):
                     fail += 1
                 else:
@@ -265,4 +281,24 @@ class FinalExportWorker(QThread):
         if self._abort:
             r["ok"] = False
             r["error"] = "用户取消"
+        # Phase C：导出后自动质检（不阻断写盘，结果带回 UI）
+        if r.get("ok") and r.get("path"):
+            try:
+                from .core import export_qc
+                expect = {
+                    "ratio": "3:4" if "3:4" in str(self.options.get("ratio", "")) else None,
+                    "require_audio": self.options.get("require_audio"),
+                }
+                qc = export_qc.check_export(r["path"], expect)
+                r["qc"] = qc
+                try:
+                    export_qc.save_qc_report(
+                        qc, str(Path(r["path"]).with_suffix("")) + "_qc.json")
+                except Exception:
+                    pass
+                if not qc.get("ok"):
+                    # 不假装「可直接上传」：附加警告，保留文件
+                    r["qc_warning"] = qc.get("summary") or "成片质检未完全通过"
+            except Exception as e:  # noqa: BLE001
+                r["qc"] = {"ok": False, "summary": f"质检异常：{e}"}
         self.done.emit(r)

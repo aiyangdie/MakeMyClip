@@ -125,6 +125,10 @@ class ProjectDB:
             ("quality_total", "INTEGER DEFAULT 0"),
             ("quality_detail", "TEXT DEFAULT '{}'"),
             ("semantic_status", "TEXT DEFAULT '未分析'"),
+            # 人工评分标签：用于校准自动质量分（只增列）
+            ("human_rating", "INTEGER"),
+            ("human_rating_note", "TEXT DEFAULT ''"),
+            ("quality_raw_total", "INTEGER DEFAULT 0"),
         ]:
             if not has_col("clips", col):
                 c.execute(f"ALTER TABLE clips ADD COLUMN {col} {decl}")
@@ -145,6 +149,16 @@ class ProjectDB:
             kind TEXT,
             member_paths TEXT,
             created_at TEXT
+        )""")
+
+        # Phase D：轻量编辑历史（只增不改），便于审计与简单回看
+        c.execute("""CREATE TABLE IF NOT EXISTS edit_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts TEXT,
+            action TEXT,
+            target TEXT,
+            payload TEXT,
+            note TEXT
         )""")
 
         # 阶段四：时间线镜头表。每个镜头独立ID/素材引用/起止/裁切/锁定/缓存标识。
@@ -306,7 +320,8 @@ class ProjectDB:
         allowed = {"start_ms", "end_ms", "primary_tag", "confidence", "score_text",
                    "recommend_reason", "potential_issue", "verify_state", "analysis_status",
                    "cut_reason", "keyframe_paths", "vision_labels", "vision_metrics",
-                   "quality_total", "quality_detail", "semantic_status"}
+                   "quality_total", "quality_detail", "semantic_status",
+                   "human_rating", "human_rating_note", "quality_raw_total"}
         sets = [k for k in fields if k in allowed]
         if not sets:
             return
@@ -480,18 +495,196 @@ class ProjectDB:
             return 0
 
     # ---------- 阶段三：语义分析 / 分镜匹配 ----------
+    def _calibration_settings_key(self):
+        """按当前分镜模板隔离校准，避免品类串味（Phase C）。"""
+        from .core import score_calibrator
+        tpl = (self.get_settings() or {}).get("storyboard_template", "") or "default"
+        stem = Path(tpl).stem if tpl else "default"
+        return f"{score_calibrator.SETTINGS_KEY}::{stem}"
+
+    def get_score_calibration(self):
+        """读取项目内的自动分校准模型（由人工评分拟合）。"""
+        from .core import score_calibrator
+        key = self._calibration_settings_key()
+        raw = (self.get_settings() or {}).get(key, "")
+        if not raw:
+            # 兼容旧键
+            raw = (self.get_settings() or {}).get(score_calibrator.SETTINGS_KEY, "")
+        return score_calibrator.loads(raw)
+
+    def save_score_calibration(self, model):
+        from .core import score_calibrator
+        self.set_setting(self._calibration_settings_key(), score_calibrator.dumps(model or {}))
+
+    def count_human_ratings(self):
+        """有合法人工分的片段数（用于界面进度）。"""
+        n = 0
+        for c in self.get_clips():
+            hr = c.get("human_rating")
+            if hr is None or hr == "":
+                continue
+            try:
+                v = int(hr)
+            except (TypeError, ValueError):
+                continue
+            if 0 <= v <= 100:
+                n += 1
+        return n
+
+    def calibration_status(self):
+        """界面用：校准是否生效、还差几条、一句话说明。"""
+        from .core import score_calibrator
+        return score_calibrator.status_summary(
+            self.get_score_calibration(), self.count_human_ratings())
+
+    def rebuild_score_calibration(self):
+        """根据当前项目全部人工评分重建校准，并写回 settings。"""
+        from .core import score_calibrator
+        model = score_calibrator.rebuild_from_clips(self.get_clips())
+        self.save_score_calibration(model)
+        return model
+
+    def save_human_rating(self, clip_id, rating, note="", mark_verified=False):
+        """保存人工质量分（0–100），并重建校准模型。
+
+        默认只写评分标签，不改核验/分析状态（避免「打分」与「已确认」语义混用）。
+        mark_verified=True 时才顺带标已确认。
+        返回 (ok, message, model)。选片用的 quality_total 会按新模型重算（若该片段已有六维分）。
+        """
+        try:
+            rating = int(rating)
+        except (TypeError, ValueError):
+            return False, "人工评分必须是 0–100 的整数", None
+        if rating < 0 or rating > 100:
+            return False, "人工评分必须在 0–100", None
+        note = (note or "").strip()
+        fields = {"human_rating": rating, "human_rating_note": note}
+        if mark_verified:
+            fields["verify_state"] = "已确认"
+            fields["analysis_status"] = "已确认"
+        self.update_clip(clip_id, **fields)
+        self.add_edit_history("human_rating", f"clip:{clip_id}",
+                             {"rating": rating, "note": note}, "人工评分")
+        model = self.rebuild_score_calibration()
+        # 用新模型重算本片段（及其他已有六维分的片段）的校准总分，供选片使用
+        self.reapply_calibration_to_clips(model)
+        return True, model.get("message", "已保存人工评分"), model
+
+    def add_edit_history(self, action: str, target: str = "", payload=None, note: str = ""):
+        with self.connect() as c:
+            c.execute(
+                "INSERT INTO edit_history(ts,action,target,payload,note) VALUES(?,?,?,?,?)",
+                (now(), action, target,
+                 json.dumps(payload or {}, ensure_ascii=False), note or ""))
+
+    def list_edit_history(self, limit=50):
+        with self.connect() as c:
+            rows = c.execute(
+                "SELECT * FROM edit_history ORDER BY id DESC LIMIT ?", (int(limit),)
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def set_storyboard_template(self, template_path: str):
+        """切换分镜模板路径（相对项目根或绝对路径），并写入 settings。"""
+        self.set_setting("storyboard_template", str(template_path))
+        self.add_edit_history("set_template", str(template_path), {}, "切换分镜模板")
+
+    def get_storyboard_template_path(self):
+        from .core import storyboard_matcher
+        raw = (self.get_settings() or {}).get("storyboard_template", "")
+        if raw and Path(raw).exists():
+            return str(Path(raw))
+        # 默认床头柜
+        return str(storyboard_matcher.DEFAULT_TEMPLATE)
+
+    def reapply_calibration_to_clips(self, model=None):
+        """对已有 quality_detail 的片段，用校准模型刷新 quality_total。
+
+        只改 quality_total / 展示字段；quality_raw_total 一旦有合法值就绝不被校准分覆盖。
+        """
+        from .core import score_calibrator
+        import json as _json
+        model = model if model is not None else self.get_score_calibration()
+        n = 0
+        for c in self.get_clips():
+            detail_raw = c.get("quality_detail") or ""
+            if not detail_raw:
+                continue
+            try:
+                detail = _json.loads(detail_raw) if isinstance(detail_raw, str) else detail_raw
+            except Exception:
+                continue
+            scores = (detail or {}).get("scores") or {}
+            if len(scores) < 6:
+                continue
+            # 只在「列缺失」(None) 时回退；0 是合法原始分，绝不当缺失
+            raw = c.get("quality_raw_total")
+            has_persisted_raw = raw is not None
+            if not has_persisted_raw:
+                try:
+                    st = _json.loads(c.get("score_text") or "{}")
+                    # 优先 score_text.raw_total；不要用可能已校准的 total 冒充原始分
+                    if st.get("raw_total") is not None:
+                        raw = st.get("raw_total")
+                    elif (detail or {}).get("raw_total") is not None:
+                        raw = (detail or {}).get("raw_total")
+                    else:
+                        # 旧数据无 raw：用六维分按默认权重重算，避免吃进已校准 total
+                        from .core.quality_scorer import DEFAULT_WEIGHTS, DIMENSIONS as _DIMS
+                        raw = round(sum(float(scores[d]) * DEFAULT_WEIGHTS[d]
+                                        for d in _DIMS if d in scores))
+                except Exception:
+                    raw = 0
+            try:
+                raw_i = int(raw)
+            except (TypeError, ValueError):
+                raw_i = 0
+            fake = {
+                "ok": True,
+                "scores": scores,
+                "total": raw_i,
+                "raw_total": raw_i,
+                "grade": (detail or {}).get("grade", ""),
+                "detail": (detail or {}).get("detail", {}),
+                "disclaimer": "",
+            }
+            calibrated = score_calibrator.apply_calibration(fake, model)
+            # 已有原始分则保持不动，只刷新校准后的 total
+            new_raw = raw_i if has_persisted_raw else int(calibrated.get("raw_total", raw_i) or 0)
+            self.update_clip(
+                c["id"],
+                quality_raw_total=new_raw,
+                quality_total=int(calibrated.get("total", 0) or 0),
+                quality_detail=_json.dumps({
+                    "scores": scores,
+                    "detail": (detail or {}).get("detail", {}),
+                    "grade": calibrated.get("grade", ""),
+                    "calibrated": bool(calibrated.get("calibrated")),
+                    "calibration_meta": calibrated.get("calibration_meta", {}),
+                    "raw_total": new_raw,
+                }, ensure_ascii=False),
+                score_text=_json.dumps(calibrated, ensure_ascii=False),
+            )
+            n += 1
+        return n
+
     def save_semantic(self, clip_id, vision, quality):
         """把视觉线索与质量分写入一个候选片段。"""
         vm = dict(vision.get("metrics", {}))
         vm["review_reasons"] = vision.get("review_reasons", [])
+        raw_total = quality.get("raw_total", quality.get("total", 0)) if quality.get("ok") else 0
         self.update_clip(clip_id,
                          vision_labels=__import__("json").dumps(vision.get("labels", []), ensure_ascii=False),
                          vision_metrics=__import__("json").dumps(vm, ensure_ascii=False),
+                         quality_raw_total=raw_total,
                          quality_total=quality.get("total", 0) if quality.get("ok") else 0,
                          quality_detail=__import__("json").dumps(
                              {"scores": quality.get("scores", {}),
                               "detail": quality.get("detail", {}),
-                              "grade": quality.get("grade", "")}, ensure_ascii=False),
+                              "grade": quality.get("grade", ""),
+                              "calibrated": bool(quality.get("calibrated")),
+                              "calibration_meta": quality.get("calibration_meta", {}),
+                              "raw_total": raw_total}, ensure_ascii=False),
                          score_text=__import__("json").dumps(quality, ensure_ascii=False)
                          if quality.get("ok") else "",
                          semantic_status="已分析")

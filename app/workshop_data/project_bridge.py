@@ -26,17 +26,23 @@ from ..core import wizard_lines as wl
 def _analyzer_kind(analysis_status: str) -> str:
     """判定这条素材的分析来源。
 
-    当前产品只有 OpenCV 启发式一种实现（已由代码盘点确认：
-    app/ai/vision_provider.py 的 provider_factory 只注册 HeuristicVisionProvider，
-    全 app/ 零网络调用）。
-    所以"已分析"一律归为 heuristic —— 绝不写成 vlm/cloud。
-
-    将来接入模型后，改为从 analysis_runs.analyzer_kind 读取即可，
-    本函数是唯一需要改的地方。
+    已分析时：看 config/vision.json 当前 provider；
+    仅当配置为本地/云端 VLM 且未降级时标 vlm/cloud，否则 heuristic。
+    绝不在只有启发式时写成「AI 已理解」。
     """
-    if analysis_status in ("已分析", "已找到候选", "候选待核验"):
-        return "heuristic"
-    return ""
+    if analysis_status not in ("已分析", "已找到候选", "候选待核验"):
+        return ""
+    try:
+        from ..ai import vision_config
+        name = vision_config.active_provider_name()
+        if name in ("ollama_qwen_vl", "ollama", "qwen_vl", "vlm", "local"):
+            # 配置指向 VLM；实际是否连上由运行时决定，UI 仍可标「尝试本地视觉模型」
+            return "vlm"
+        if name in ("cloud", "cloud_openai_vl"):
+            return "cloud"
+    except Exception:
+        pass
+    return "heuristic"
 
 
 def _derive_status(asset_row: dict, pending: int) -> str:

@@ -132,5 +132,23 @@ def read_agent_log(tail: int = 20) -> str:
     return _ok({"log": commands.read_log(tail)})
 
 
+@mcp.tool()
+def get_calibration_status(project: str) -> str:
+    """【查看人工评分校准】查看项目人工打分条数、校准是否生效、当前视觉 Provider 与模板。只读。"""
+    try:
+        return _ok(commands.calibration_status(project))
+    except commands.CommandError as e:
+        return _fail(e)
+
+
+@mcp.tool()
+def list_storyboard_templates() -> str:
+    """【列出分镜模板】列出 templates/furniture 下可用商品分镜 JSON（床头柜/台灯等）。只读。"""
+    try:
+        return _ok(commands.list_storyboard_templates())
+    except commands.CommandError as e:
+        return _fail(e)
+
+
 if __name__ == "__main__":
     mcp.run()

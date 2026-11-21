@@ -294,10 +294,47 @@ class HeuristicVisionProvider(BaseVisionProvider):
         return result
 
 
-def provider_factory(name=None):
-    """按名称创建视觉识别实现；未知名称回退到本地实现。"""
-    registry = {
-        HeuristicVisionProvider.name: HeuristicVisionProvider,
-    }
-    cls = registry.get(name or HeuristicVisionProvider.name, HeuristicVisionProvider)
-    return cls()
+def provider_factory(name=None, prefer_config=True):
+    """按名称创建视觉识别实现。
+
+    prefer_config=True 时读取 config/vision.json 的 provider；
+    本地 VLM 选中但服务未就绪时，自动降级到启发式（调用方应据 provider.name 标注 UI）。
+    """
+    from . import vision_config
+    cfg = vision_config.load_vision_config()
+    chosen = name or (vision_config.active_provider_name(cfg) if prefer_config else None)
+    chosen = chosen or HeuristicVisionProvider.name
+
+    if chosen in (HeuristicVisionProvider.name, "heuristic", "local_heuristic"):
+        return HeuristicVisionProvider()
+
+    if chosen in ("ollama_qwen_vl", "ollama", "qwen_vl", "vlm", "local"):
+        from .ollama_vl_provider import OllamaVLProvider
+        local = cfg.get("local") or {}
+        prov = OllamaVLProvider(
+            base_url=local.get("base_url"),
+            model=local.get("model"),
+            timeout_sec=local.get("timeout_sec"),
+            sample_interval_ms=local.get("sample_interval_ms"),
+            max_samples=local.get("max_samples"),
+        )
+        if prov.ping():
+            return prov
+        # 降级：返回启发式，但挂上降级标记供 UI 读取
+        fb = HeuristicVisionProvider()
+        fb.degraded_from = OllamaVLProvider.name
+        fb.degrade_reason = "本地视觉模型未就绪，已降级为基础画面测量"
+        return fb
+
+    if chosen in ("cloud", "cloud_openai_vl"):
+        from .cloud_vl_provider import CloudVLProvider
+        cloud = cfg.get("cloud") or {}
+        if not cloud.get("enabled"):
+            fb = HeuristicVisionProvider()
+            fb.degraded_from = "cloud"
+            fb.degrade_reason = "云端视觉未启用（cost_cap/开关关闭）"
+            return fb
+        return CloudVLProvider(cloud)
+
+    # 未知名称 → 启发式
+    return HeuristicVisionProvider()

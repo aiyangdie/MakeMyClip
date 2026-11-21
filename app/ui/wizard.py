@@ -48,7 +48,7 @@ from . import design_tokens as dt
 STEPS = ["导入素材", "挑镜头", "看片调整", "字幕配音", "一键出片"]
 STEP_HINTS = [
     "把视频拖进来就行，原始文件不会动；放错了随时能移出去。",
-    "按画面内容排好了顺序；想换哪一段，点开「逐个挑」就行。",
+    "先看镜头顺序；可对当前镜头点「好片/一般/差片」校准偏好，满 3 条后选片更贴近你。",
     "节奏已经排好，重要的镜头多停一会儿；点卡片能看详情。",
     "字幕能逐句改，改完点保存，出片就用你写的。",
     "确认一下就按大按钮；出片前会如实提醒没画面和没配音的情况。",
@@ -578,7 +578,10 @@ class WizardWindow(QMainWindow):
         v.setContentsMargins(0, 4, 0, 0)
         v.setSpacing(12)
         v.addWidget(_label("第 2 步 · 挑镜头", "step_title"))
-        v.addWidget(_label("我们从视频里排好了顺序，就是之前确认过的那些，一段都没改。"))
+        v.addWidget(_label(
+            "镜头顺序来自项目时间线（模板 + 匹配/人工确认）。"
+            "画面「好不好看」可用下方快捷打分校准；当前默认是基础画面测量，不是语义大模型。",
+            "step_desc", True))
 
         metric = _frame("subtle")
         mh = QHBoxLayout(metric)
@@ -588,6 +591,9 @@ class WizardWindow(QMainWindow):
                             "step_desc", True), 1)
         v.addWidget(metric)
 
+        self.pick_calib = _label("人工校准：打开项目后显示进度", "step_hint", True)
+        v.addWidget(self.pick_calib)
+
         big = QPushButton("就用这些镜头，下一步 →")
         big.setObjectName("primary")
         big.clicked.connect(lambda: self._goto_step(2))
@@ -596,12 +602,31 @@ class WizardWindow(QMainWindow):
         self.pick_list = QListWidget()
         self.pick_list.itemClicked.connect(self._on_pick_clicked)
         v.addWidget(self.pick_list, 1)
-        self.pick_desc = _label("按画面内容排好了顺序。", "step_hint", True)
+        self.pick_desc = _label("点某一行看它用的视频；可对当前镜头快捷打分。", "step_hint", True)
         v.addWidget(self.pick_desc)
+
+        from ..core import score_calibrator as _sc
+        quick = QHBoxLayout()
+        quick.addWidget(_label("偏好打分："))
+        for label, score in _sc.QUICK_RATINGS:
+            btn = QPushButton(f"{label}({score})")
+            btn.setToolTip("给当前选中镜头关联的候选片段打分，并重建校准")
+            btn.clicked.connect(lambda _=False, s=score: self._wizard_quick_rate(s))
+            quick.addWidget(btn)
+        quick.addStretch(1)
+        v.addLayout(quick)
+
+        row = QHBoxLayout()
+        b_miss = QPushButton("导出缺片补拍清单")
+        b_miss.setToolTip("把匹配结果里标记为缺失的分镜写成 TXT/CSV，方便补拍")
+        b_miss.clicked.connect(self._wizard_export_missing)
+        row.addWidget(b_miss)
         b = QPushButton("想换镜头 / 改长短？去完整工作台 →")
         b.setObjectName("ghost")
         b.clicked.connect(lambda: self._open_workbench(5))
-        v.addWidget(b, 0, Qt.AlignLeft)
+        row.addWidget(b)
+        row.addStretch(1)
+        v.addLayout(row)
         return w
 
     # ---------------- 第 3 步：看片调整 ----------------
@@ -950,28 +975,106 @@ class WizardWindow(QMainWindow):
 
     def _refresh_pick(self):
         self.pick_list.clear()
+        self._pick_shot_id = None
         if not self.db:
+            self._refresh_pick_calib()
             return
         shots = self.db.get_timeline()
         for i, s in enumerate(shots, 1):
             sec = (s.get("target_ms") or 0) / 1000.0
-            label = f"{i}.  {s.get('name', '')}    ·    约 {sec:.1f} 秒" if sec else \
-                    f"{i}.  {s.get('name', '')}"
+            hr = ""
+            cid = s.get("clip_id")
+            if cid:
+                clip = next((c for c in self.db.get_clips() if c.get("id") == cid), None)
+                if clip and clip.get("human_rating") is not None:
+                    hr = f"  · 人工分{clip.get('human_rating')}"
+            label = f"{i}.  {s.get('name', '')}    ·    约 {sec:.1f} 秒{hr}" if sec else \
+                    f"{i}.  {s.get('name', '')}{hr}"
             self.pick_list.addItem(label)
         self.pick_desc.setText(
-            f"按画面内容排好了 {len(shots)} 个镜头。点某一行看它用的视频；"
-            "想换镜头、改长短，点下面按钮去完整工作台。")
+            f"共 {len(shots)} 个镜头（来自时间线）。点某一行后可用「好片/一般/差片」打分；"
+            "想精细换镜头、改长短，去完整工作台。")
+        self._refresh_pick_calib()
+
+    def _refresh_pick_calib(self):
+        lab = getattr(self, "pick_calib", None)
+        if lab is None:
+            return
+        if not self.db:
+            lab.setText("人工校准：未打开项目")
+            return
+        try:
+            st = self.db.calibration_status()
+            lab.setText(st.get("line") or "")
+        except Exception as e:  # noqa: BLE001
+            lab.setText(f"人工校准：读取失败（{e}）")
 
     def _on_pick_clicked(self, item):
         i = self.pick_list.row(item)
         shots = self.db.get_timeline() if self.db else []
         if 0 <= i < len(shots):
             s = shots[i]
+            self._pick_shot_id = s.get("shot_id")
+            self._pick_clip_id = s.get("clip_id")
             ap = self._shot_asset(s)
             fn = Path(ap).name if ap else "（还没画面）"
+            hr = ""
+            if self._pick_clip_id:
+                clip = next((c for c in self.db.get_clips()
+                             if c.get("id") == self._pick_clip_id), None)
+                if clip and clip.get("human_rating") is not None:
+                    hr = f" · 已有人工分 {clip.get('human_rating')}"
             self.pick_desc.setText(
                 f"第 {i + 1} 个镜头「{s.get('name', '')}」用的视频：{fn}"
-                f" · 约 {(s.get('target_ms') or 0) / 1000.0:.1f} 秒。")
+                f" · 约 {(s.get('target_ms') or 0) / 1000.0:.1f} 秒{hr}。"
+                f"{'可点上方快捷打分。' if self._pick_clip_id else '（尚无关联候选片段，请先在工作台完成识别选片）'}")
+
+    def _wizard_quick_rate(self, score: int):
+        if not self.db:
+            QMessageBox.information(self, "提示", "请先打开项目")
+            return
+        cid = getattr(self, "_pick_clip_id", None)
+        if not cid:
+            # 尝试从当前选中行再解析
+            row = self.pick_list.currentRow()
+            shots = self.db.get_timeline()
+            if 0 <= row < len(shots):
+                cid = shots[row].get("clip_id")
+        if not cid:
+            QMessageBox.information(
+                self, "无法打分",
+                "当前镜头没有关联候选片段。请先在完整工作台完成「识别+选片」，或点选已有片段的镜头行。")
+            return
+        ok, msg, model = self.db.save_human_rating(int(cid), int(score), note="wizard_quick")
+        if not ok:
+            QMessageBox.warning(self, "保存失败", msg)
+            return
+        self.db.touch_modified()
+        self._refresh_pick()
+        tip = msg
+        if model and model.get("ok"):
+            tip += "\n\n校准已生效。可在完整工作台重新「自动匹配分镜」让选片吃到新分数。"
+        QMessageBox.information(self, "已记录偏好", tip)
+        self.status_label.setText(f"已给镜头打 {score} 分并更新校准。")
+
+    def _wizard_export_missing(self):
+        if not self.db:
+            QMessageBox.information(self, "提示", "请先打开项目")
+            return
+        from ..core import missing_export
+        results = self.db.get_match_results() or {}
+        if not results:
+            QMessageBox.information(
+                self, "没有匹配结果",
+                "项目里还没有分镜匹配结果。请到完整工作台点「自动匹配分镜」后再导出。")
+            return
+        out_dir = config.EXPORT_DIR / "missing_lists"
+        txt, csv_path = missing_export.export_missing(
+            results, str(out_dir), storyboards=self.db.get_storyboards())
+        QMessageBox.information(
+            self, "已导出",
+            f"缺片清单已写出：\n{txt or ''}\n{csv_path or ''}")
+        self.status_label.setText("缺片补拍清单已导出到 exports/missing_lists。")
 
     def _shot_asset(self, shot):
         ap = (shot.get("asset_path") or "").strip()

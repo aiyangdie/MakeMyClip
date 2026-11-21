@@ -280,3 +280,21 @@ def export_video(project, output_name, confirm=False, ratio="3:4 竖版",
             "rendered": r["rendered"], "cached_from_last_time": r["cached"],
             "skipped_missing": [e.get("shot_id") for e in r["errors"]],
             "note": "成片已生成；三轨(旁白/字幕/音乐)合成仍请走界面音频字幕页或告知用户。"}
+
+
+def calibration_status(project: str):
+    """【查看人工校准状态】只读：已标注条数、是否生效、一句话说明。"""
+    db = _open(project)
+    st = db.calibration_status()
+    from .ai import vision_config
+    st["vision_provider"] = vision_config.active_provider_name()
+    st["template"] = db.get_storyboard_template_path()
+    st["edit_history_tail"] = db.list_edit_history(10)
+    _log("calibration_status", st.get("line", ""), project=project)
+    return st
+
+
+def list_storyboard_templates():
+    """【列出分镜模板】templates/furniture 下可用 JSON。只读。"""
+    from .core import template_catalog
+    return {"templates": template_catalog.list_templates()}
