@@ -21,7 +21,14 @@ from .quality_scorer import DIMENSIONS, _clamp
 
 SETTINGS_KEY = "score_calibration"
 MIN_AFFINE_SAMPLES = 3
-MIN_WEIGHT_SAMPLES = 6
+# 六维+bias=7 参数：样本过少易共线过拟合，抬高门槛
+MIN_WEIGHT_SAMPLES = 12
+# 仿射斜率安全范围；超出则退回「均值偏置」校准
+MAX_AFFINE_SLOPE = 3.0
+MIN_AUTO_SPAN = 1e-3  # 自动分几乎无变化时不做斜率拟合
+# 权重绝对值过大视为数值爆炸，拒绝 weighted
+MAX_ABS_WEIGHT = 5.0
+UNCALIBRATED_MARK = "｜尚未用人评分校准（样本不足或未标注）"
 
 
 def _grade(total: float) -> str:
@@ -119,13 +126,20 @@ def fit_calibration(examples: List[dict]) -> Dict[str, Any]:
     autos = np.array([e["auto_total"] for e in examples], dtype=float)
     humans = np.array([e["human"] for e in examples], dtype=float)
 
-    # 仿射：human ≈ a * auto + b
-    A = np.column_stack([autos, np.ones(len(autos))])
-    coef, _, _, _ = np.linalg.lstsq(A, humans, rcond=None)
-    a, b = float(coef[0]), float(coef[1])
-    # 防止极端斜率
-    if not np.isfinite(a) or abs(a) < 1e-6:
+    # 仿射：human ≈ a * auto + b；自动分几乎不变或斜率爆炸时退回偏置校准
+    auto_span = float(np.max(autos) - np.min(autos))
+    if auto_span < MIN_AUTO_SPAN:
         a, b = 1.0, float(np.mean(humans - autos))
+    else:
+        A = np.column_stack([autos, np.ones(len(autos))])
+        coef, _, rank, _ = np.linalg.lstsq(A, humans, rcond=None)
+        a, b = float(coef[0]), float(coef[1])
+        if (not np.isfinite(a) or not np.isfinite(b)
+                or abs(a) < 1e-6 or abs(a) > MAX_AFFINE_SLOPE or rank < 2):
+            a, b = 1.0, float(np.mean(humans - autos))
+    # 再夹一次，防止极端 b 把分数打飞（apply 时仍有 0–100 clamp）
+    if not np.isfinite(b):
+        b = 0.0
     pred = a * autos + b
     mae = float(np.mean(np.abs(pred - humans)))
 
@@ -138,27 +152,32 @@ def fit_calibration(examples: List[dict]) -> Dict[str, Any]:
         "message": f"仿射校准（{len(examples)} 条人工分）：score' = {a:.3f}*auto + {b:.1f}",
     })
 
-    # 样本够：六维最小二乘权重
+    # 样本够且矩阵满秩、权重不过大：才启用六维权重
     if len(examples) >= MIN_WEIGHT_SAMPLES:
         X = np.array([e["vec"] for e in examples], dtype=float)
-        Xb = np.column_stack([X, np.ones(len(X))])
-        w, _, _, _ = np.linalg.lstsq(Xb, humans, rcond=None)
-        weights = {d: round(float(w[i]), 6) for i, d in enumerate(DIMENSIONS)}
-        bias = float(w[-1])
-        pred_w = Xb @ w
-        mae_w = float(np.mean(np.abs(pred_w - humans)))
-        # 仅当维度模型不比仿射差太多时启用
-        if mae_w <= mae * 1.15 + 1.0:
-            model.update({
-                "mode": "weighted",
-                "weights": weights,
-                "bias": round(bias, 6),
-                "mae": round(mae_w, 3),
-                "message": (
-                    f"六维权重校准（{len(examples)} 条人工分），"
-                    f"MAE={mae_w:.1f}"
-                ),
-            })
+        # 列方差过小 = 共线/无信息，跳过
+        col_std = np.std(X, axis=0)
+        if float(np.min(col_std)) >= 1e-6:
+            Xb = np.column_stack([X, np.ones(len(X))])
+            w, _, rank_w, _ = np.linalg.lstsq(Xb, humans, rcond=None)
+            if rank_w >= Xb.shape[1] and np.all(np.isfinite(w)):
+                if float(np.max(np.abs(w[:-1]))) <= MAX_ABS_WEIGHT:
+                    weights = {d: round(float(w[i]), 6) for i, d in enumerate(DIMENSIONS)}
+                    bias = float(w[-1])
+                    pred_w = Xb @ w
+                    mae_w = float(np.mean(np.abs(pred_w - humans)))
+                    # 仅当维度模型明显不差于仿射时启用
+                    if mae_w <= mae * 1.05 + 0.5:
+                        model.update({
+                            "mode": "weighted",
+                            "weights": weights,
+                            "bias": round(bias, 6),
+                            "mae": round(mae_w, 3),
+                            "message": (
+                                f"六维权重校准（{len(examples)} 条人工分），"
+                                f"MAE={mae_w:.1f}"
+                            ),
+                        })
     return model
 
 
@@ -166,16 +185,23 @@ def apply_calibration(score_result: dict, model: Optional[dict]) -> dict:
     """把校准应用到 quality_scorer 的结果（原地增强后返回）。"""
     if not score_result.get("ok"):
         return score_result
-    raw_total = float(score_result.get("total", 0))
+    # 优先保留已有 raw_total，避免对已校准结果再次 apply 时把校准分当原始分
+    if score_result.get("raw_total") is not None:
+        try:
+            raw_total = float(score_result["raw_total"])
+        except (TypeError, ValueError):
+            raw_total = float(score_result.get("total", 0))
+    else:
+        raw_total = float(score_result.get("total", 0))
     score_result["raw_total"] = round(raw_total)
     score_result["calibrated"] = False
     score_result["calibration_meta"] = {"mode": "none"}
 
+    base_disclaimer = (score_result.get("disclaimer") or "").replace(UNCALIBRATED_MARK, "")
     if not model or not model.get("ok"):
-        score_result["disclaimer"] = (
-            score_result.get("disclaimer", "")
-            + "｜尚未用人评分校准（样本不足或未标注）"
-        )
+        score_result["disclaimer"] = base_disclaimer.rstrip("｜") + UNCALIBRATED_MARK
+        score_result["total"] = round(raw_total)
+        score_result["grade"] = _grade(raw_total)
         return score_result
 
     cal = raw_total
@@ -185,15 +211,23 @@ def apply_calibration(score_result: dict, model: Optional[dict]) -> dict:
         cal = float(model.get("bias", 0.0))
         for d in DIMENSIONS:
             cal += float(model["weights"].get(d, 0.0)) * float(scores.get(d, 0))
-    elif mode == "affine":
-        cal = float(model.get("a", 1.0)) * raw_total + float(model.get("b", 0.0))
+    else:
+        # affine 或未知 mode：统一走仿射
+        a = float(model.get("a", 1.0))
+        b = float(model.get("b", 0.0))
+        if not np.isfinite(a) or abs(a) > MAX_AFFINE_SLOPE or abs(a) < 1e-6:
+            a = 1.0
+            b = b if np.isfinite(b) else 0.0
+        if not np.isfinite(b):
+            b = 0.0
+        cal = a * raw_total + b
 
     cal = _clamp(cal)
     score_result["total"] = round(cal)
     score_result["grade"] = _grade(cal)
     score_result["calibrated"] = True
     score_result["calibration_meta"] = {
-        "mode": mode,
+        "mode": mode if mode in ("affine", "weighted") else "affine",
         "n_samples": model.get("n_samples"),
         "mae": model.get("mae"),
         "message": model.get("message"),

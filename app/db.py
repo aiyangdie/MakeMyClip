@@ -502,9 +502,11 @@ class ProjectDB:
         self.save_score_calibration(model)
         return model
 
-    def save_human_rating(self, clip_id, rating, note=""):
+    def save_human_rating(self, clip_id, rating, note="", mark_verified=False):
         """保存人工质量分（0–100），并重建校准模型。
 
+        默认只写评分标签，不改核验/分析状态（避免「打分」与「已确认」语义混用）。
+        mark_verified=True 时才顺带标已确认。
         返回 (ok, message, model)。选片用的 quality_total 会按新模型重算（若该片段已有六维分）。
         """
         try:
@@ -514,15 +516,21 @@ class ProjectDB:
         if rating < 0 or rating > 100:
             return False, "人工评分必须在 0–100", None
         note = (note or "").strip()
-        self.update_clip(clip_id, human_rating=rating, human_rating_note=note,
-                         verify_state="已确认", analysis_status="已确认")
+        fields = {"human_rating": rating, "human_rating_note": note}
+        if mark_verified:
+            fields["verify_state"] = "已确认"
+            fields["analysis_status"] = "已确认"
+        self.update_clip(clip_id, **fields)
         model = self.rebuild_score_calibration()
         # 用新模型重算本片段（及其他已有六维分的片段）的校准总分，供选片使用
         self.reapply_calibration_to_clips(model)
         return True, model.get("message", "已保存人工评分"), model
 
     def reapply_calibration_to_clips(self, model=None):
-        """对已有 quality_detail 的片段，用校准模型刷新 quality_total。"""
+        """对已有 quality_detail 的片段，用校准模型刷新 quality_total。
+
+        只改 quality_total / 展示字段；quality_raw_total 一旦有合法值就绝不被校准分覆盖。
+        """
         from .core import score_calibrator
         import json as _json
         model = model if model is not None else self.get_score_calibration()
@@ -538,27 +546,43 @@ class ProjectDB:
             scores = (detail or {}).get("scores") or {}
             if len(scores) < 6:
                 continue
+            # 只在「列缺失」(None) 时回退；0 是合法原始分，绝不当缺失
             raw = c.get("quality_raw_total")
-            if raw is None or raw == 0:
-                # 兼容旧数据：从 score_text / quality_total 推断
+            has_persisted_raw = raw is not None
+            if not has_persisted_raw:
                 try:
                     st = _json.loads(c.get("score_text") or "{}")
-                    raw = st.get("raw_total") or st.get("total") or c.get("quality_total") or 0
+                    # 优先 score_text.raw_total；不要用可能已校准的 total 冒充原始分
+                    if st.get("raw_total") is not None:
+                        raw = st.get("raw_total")
+                    elif (detail or {}).get("raw_total") is not None:
+                        raw = (detail or {}).get("raw_total")
+                    else:
+                        # 旧数据无 raw：用六维分按默认权重重算，避免吃进已校准 total
+                        from .core.quality_scorer import DEFAULT_WEIGHTS, DIMENSIONS as _DIMS
+                        raw = round(sum(float(scores[d]) * DEFAULT_WEIGHTS[d]
+                                        for d in _DIMS if d in scores))
                 except Exception:
-                    raw = c.get("quality_total") or 0
+                    raw = 0
+            try:
+                raw_i = int(raw)
+            except (TypeError, ValueError):
+                raw_i = 0
             fake = {
                 "ok": True,
                 "scores": scores,
-                "total": int(raw),
-                "raw_total": int(raw),
+                "total": raw_i,
+                "raw_total": raw_i,
                 "grade": (detail or {}).get("grade", ""),
                 "detail": (detail or {}).get("detail", {}),
                 "disclaimer": "",
             }
             calibrated = score_calibrator.apply_calibration(fake, model)
+            # 已有原始分则保持不动，只刷新校准后的 total
+            new_raw = raw_i if has_persisted_raw else int(calibrated.get("raw_total", raw_i) or 0)
             self.update_clip(
                 c["id"],
-                quality_raw_total=int(calibrated.get("raw_total", raw) or 0),
+                quality_raw_total=new_raw,
                 quality_total=int(calibrated.get("total", 0) or 0),
                 quality_detail=_json.dumps({
                     "scores": scores,
@@ -566,7 +590,7 @@ class ProjectDB:
                     "grade": calibrated.get("grade", ""),
                     "calibrated": bool(calibrated.get("calibrated")),
                     "calibration_meta": calibrated.get("calibration_meta", {}),
-                    "raw_total": calibrated.get("raw_total"),
+                    "raw_total": new_raw,
                 }, ensure_ascii=False),
                 score_text=_json.dumps(calibrated, ensure_ascii=False),
             )

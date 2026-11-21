@@ -106,21 +106,31 @@ class SemanticWorker(QThread):
 
     items: [(clip_id, asset_path, start_ms, end_ms), ...]
     calibration: 可选，人工评分拟合的校准模型；有则自动分会贴近人的偏好。
+    calibration_holder: 可选 dict，键 'model'；主线程更新后本线程下一条片段可读到新模型，
+                        减轻「评分中途又存人工分」导致的陈旧快照问题。
     全程可取消；单片段失败只记录错误，不中断整批。
     """
     progress = Signal(int, int, str)        # 当前, 总数, 文件名
     one_done = Signal(int, dict, dict)      # clip_id, vision, quality
     all_done = Signal(int, int)             # 成功, 失败
 
-    def __init__(self, items, provider_name=None, calibration=None, parent=None):
+    def __init__(self, items, provider_name=None, calibration=None,
+                 calibration_holder=None, parent=None):
         super().__init__(parent)
         self.items = list(items)
         self.provider = vision_provider.provider_factory(provider_name)
         self.calibration = calibration
+        self.calibration_holder = calibration_holder  # mutable {"model": ...}
         self._abort = False
 
     def stop(self):
         self._abort = True
+
+    def _current_calibration(self):
+        h = self.calibration_holder
+        if isinstance(h, dict) and "model" in h:
+            return h.get("model")
+        return self.calibration
 
     def run(self):
         ok = fail = 0
@@ -133,7 +143,7 @@ class SemanticWorker(QThread):
             try:
                 vision = self.provider.analyze_segment(path, start_ms, end_ms)
                 quality = quality_scorer.score_segment(
-                    path, start_ms, end_ms, calibration=self.calibration)
+                    path, start_ms, end_ms, calibration=self._current_calibration())
                 if not vision.get("ok") or not quality.get("ok"):
                     fail += 1
                 else:
