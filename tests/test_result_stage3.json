@@ -1,0 +1,112 @@
+{
+  "stage": 3,
+  "total": 21,
+  "passed": 21,
+  "results": [
+    {
+      "name": "三色灯素材成功分析",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "观察到灯光状态数>=2",
+      "pass": true,
+      "detail": "状态数=7"
+    },
+    {
+      "name": "给出色温切换线索",
+      "pass": true,
+      "detail": "建议标签=['color_temperature']"
+    },
+    {
+      "name": "色温结论标注需核验",
+      "pass": true,
+      "detail": "1 条疑似项均需核验"
+    },
+    {
+      "name": "抽屉素材成功分析",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "往复动作标注需核验",
+      "pass": true,
+      "detail": "往复仅为弱信号"
+    },
+    {
+      "name": "评分成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "六个维度分数齐全",
+      "pass": true,
+      "detail": "['sharpness', 'exposure', 'stability', 'composition', 'cleanliness', 'occlusion']"
+    },
+    {
+      "name": "总分与等级合理",
+      "pass": true,
+      "detail": "总分89 良好"
+    },
+    {
+      "name": "保留评分明细依据",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "标注非验证AI准确率",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "生成真实候选片段",
+      "pass": true,
+      "detail": "共 16 个片段"
+    },
+    {
+      "name": "识别评分结果已持久化",
+      "pass": true,
+      "detail": "16/16"
+    },
+    {
+      "name": "所有分镜都有匹配结果",
+      "pass": true,
+      "detail": "12/12"
+    },
+    {
+      "name": "非缺失分镜都是候选待核验",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "无合格素材时报缺失+补拍建议",
+      "pass": true,
+      "detail": "status=未找到合适素材, 补拍建议=请在该商品的 JSON 分镜模板中，为此分镜补充 requi"
+    },
+    {
+      "name": "已确认镜头被跳过",
+      "pass": true,
+      "detail": "镜头已锁定或已确认，自动匹配未覆盖"
+    },
+    {
+      "name": "应用匹配后已确认镜头未被覆盖",
+      "pass": true,
+      "detail": "selected_clip_id=999"
+    },
+    {
+      "name": "选中的片段ID非空",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "重开后识别结果仍在",
+      "pass": true,
+      "detail": "16/16"
+    },
+    {
+      "name": "重开后匹配结果仍在",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

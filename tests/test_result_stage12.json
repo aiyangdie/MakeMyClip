@@ -1,0 +1,441 @@
+{
+  "stage": 12,
+  "total": 84,
+  "passed": 84,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "改前已全量备份（16 个文件）",
+      "ok": true,
+      "detail": "16/16"
+    },
+    {
+      "name": "每个备份都能对应到现存的真实文件",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "改动范围没有超出计划（6 个代码文件 + 使用说明末尾追加）",
+      "ok": true,
+      "detail": "['app_core_final_exporter.py', 'app_core_subtitle.py', 'app_core_video_editor.py', 'app_db.py', 'app_ui_main_window.py', 'app_ui_wizard.py', '使用说明.md']"
+    },
+    {
+      "name": "阶段十一交付物、旧测试与未涉及代码字节级未动",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "《使用说明》原文逐字保留（只增不改，一行不丢）",
+      "ok": true,
+      "detail": "原文474行 → 现549行"
+    },
+    {
+      "name": "v12.0 增补打在原文之后、带版本标记",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "旧工作台只是最小必要修正（只替换旧 ratio 取值行）",
+      "ok": true,
+      "detail": "新增7行 删除1行"
+    },
+    {
+      "name": "旧工作台改动正是「3:4 推荐比例映射」",
+      "ok": true,
+      "detail": "['+        # 【阶段十二】下拉里「3:4 竖版(淘宝商详推荐)」带说明文字，不是 EXPORT_SIZES 的键，', '+        # 以前会静默回落到 16:9 横屏；这里统一映射回真实键，用户选的竖版才算数。', '+        raw_ratio = self.ex_ratio.currentText()']"
+    },
+    {
+      "name": "备份里的向导是阶段十一旧版，可随时回退",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "真实项目 13 个镜头",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "自定义字幕能存进项目并读回",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "出片文案用上了你改的字（不再每次重新生成覆盖）",
+      "ok": true,
+      "detail": "手抚柜面近景"
+    },
+    {
+      "name": "出片标记「用了自定义文案」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "默认卖点标签本身没有未核实宣传词",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "你自己写的字也过禁词护栏（3 句违规、1 句合规）",
+      "ok": true,
+      "detail": "['「承重100公斤」含未核实词「承重」', '「实木框架」含未核实词「实木」', '「十年质保」含未核实词「质保」']"
+    },
+    {
+      "name": "出片前会拦下未核实宣传词",
+      "ok": true,
+      "detail": "['产品整体亮相: 含禁用词「承重」']"
+    },
+    {
+      "name": "标准模式按当前 13 个镜头重建（不再用库里陈旧 6 句）",
+      "ok": true,
+      "detail": "rebuilt=True 行数=13"
+    },
+    {
+      "name": "标准模式重建时明确告知旧文案作废",
+      "ok": true,
+      "detail": "['文案已按当前镜头重新排好，旧的几句话不再使用。']"
+    },
+    {
+      "name": "标准模式文案与镜头一一对应",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "旧工作台「3:4 推荐」选项真实存在",
+      "ok": true,
+      "detail": "['9:16 竖屏', '16:9 横屏', '1:1 正方形', '3:4 竖版(淘宝商详推荐)']"
+    },
+    {
+      "name": "旧工作台选 3:4 不再静默回落 16:9",
+      "ok": true,
+      "detail": "3:4 竖版"
+    },
+    {
+      "name": "完整工作台把带版式的文案交给字幕引擎",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "卖点标签大字版式能生成",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "大字版式真的用了 Big/Title 样式（没退化成普通小标签）",
+      "ok": true,
+      "detail": "Big=1 Title=2"
+    },
+    {
+      "name": "能新建自己的项目（不再强制打开演示项目）",
+      "ok": true,
+      "detail": "[WindowsPath('C:/Users/Administrator/WorkBuddy/2026-11-19-14-00-14/MakeMyClip/projects/我的项目_阶段十二验收项目_1795271225.db')]"
+    },
+    {
+      "name": "新项目一打开不会假装前 4 步都做完了",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "真做过 4 步才打 4 个勾",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "「上次停在第 N 步」按真实记录显示",
+      "ok": true,
+      "detail": "上次停在第 3 步「看片调整」"
+    },
+    {
+      "name": "第 3 步有 13 张镜头卡片",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "镜头卡片能点开看该镜头详情",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "导出撞名自动加序号（同一秒连点也不覆盖）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "字幕表 13 行",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "字幕可逐句编辑（第 3 列可改）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "点保存能把改的字存下来",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "改的字确实进了项目库",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "恢复默认后自定义字被清掉",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "分组按视频真实所在文件夹（不是脏 folder 字段）",
+      "ok": true,
+      "detail": "1 / 1"
+    },
+    {
+      "name": "脏 folder 字段（纯数字）不干扰分组",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "能按文件夹分出多个组",
+      "ok": true,
+      "detail": "[('3', 4), ('5', 3), ('7', 3), ('1', 2), ('6', 2), ('4', 1)]"
+    },
+    {
+      "name": "分组数量合计等于素材总数",
+      "ok": true,
+      "detail": "15/15"
+    },
+    {
+      "name": "拖拽/批量归类能落库",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "拖拽数据带自定义格式",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "拖拽数据里是真实存在的素材路径",
+      "ok": true,
+      "detail": "['C:\\\\Users\\\\Administrator\\\\Desktop\\\\T26单抽视频\\\\视屏素材01\\\\1\\\\IMG_7520整体+细节.MOV']"
+    },
+    {
+      "name": "素材卡片为「只拖出」模式，能拖到分组上",
+      "ok": true,
+      "detail": "DragDropMode.DragOnly"
+    },
+    {
+      "name": "点拖放区会弹出「选文件 / 选整个文件夹」二选一",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "权限错误翻译成人话",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "解码错误翻译成人话",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "报错不把英文异常名甩给用户",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "进度能显示具体阶段",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "缺画面镜头能被逐个点名",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "出片前会先如实提醒缺画面镜头",
+      "ok": true,
+      "detail": "<app.ui.wizard.WizardWindow(0x2c440bac620) at 0x000002C440B75800> 还有镜头没画面 有 1 个镜头还没绑定视频：某镜头。\n\n出片会跳过它们（成片会短一点）。要继续吗？"
+    },
+    {
+      "name": "选中文旁白却没配音时会明确提醒，不静默降级",
+      "ok": true,
+      "detail": "<app.ui.wizard.WizardWindow(0x2c440bac620) at 0x000002C440B75800> 中文旁白还没配音 你选了「完整句字幕 + 中文旁白」，但项目里只有 0/13 句配音。\n\n这次成片不会有念稿"
+    },
+    {
+      "name": "标准字幕按叠化重排，首尾相接不累积漂移",
+      "ok": true,
+      "detail": "[(0, 3100), (3100, 6200), (6200, 9700)]"
+    },
+    {
+      "name": "重排时间不改任何文字",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "标准字幕画布跟随成片真实比例",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "不再写死 720x1280",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "卖点标签画布跟随成片真实比例",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「缓存复用」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「可解码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「crf」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「帧率」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「编码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「xfade」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "完整工作台仍能打开（8 个页面）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "切项目时工作台记住当前项目（会同步刷新）",
+      "ok": true,
+      "detail": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\projects\\_stage12_test.db"
+    },
+    {
+      "name": "真实一键出片执行成功",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "你改的字真的进了成片字幕（SRT 与烧录同源）",
+      "ok": true,
+      "detail": "﻿1 | 00:00:00,000 --> 00:00:02,597 | 手抚柜面近景 |  | 2 | 00:00:02,597 --> 00:00:04,196 | 台面细节 |  | 3 | 00:00:04,196 --> 00:00:06,294 | 手抚柜面 |  | 4 | 0"
+    },
+    {
+      "name": "成片文件真实存在且非空",
+      "ok": true,
+      "detail": "4772212"
+    },
+    {
+      "name": "成片为 3:4 竖版 720x960",
+      "ok": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "成片时长落在 15-30 秒",
+      "ok": true,
+      "detail": "29670"
+    },
+    {
+      "name": "成片含音轨",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "成片可解码",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "导出文件名带时间戳",
+      "ok": true,
+      "detail": "一键出片_参考片风格_20261121_222705.mp4"
+    },
+    {
+      "name": "旧成片没有被覆盖（新片另存）",
+      "ok": true,
+      "detail": "16 -> 17"
+    },
+    {
+      "name": "成片结果显示完整存放路径",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "13 个已确认镜头逐行未变",
+      "ok": true,
+      "detail": "13 行"
+    },
+    {
+      "name": "出片未减少镜头数",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "原素材文件一个都没被删改",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "标准模式真实出片也成功",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "标准模式 13 句文案都进了字幕（不是旧 6 句）",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "无配音时成片结果如实说明「没有念稿」",
+      "ok": true,
+      "detail": "你选了中文旁白，但项目里只有 0/13 句配音，这次没有念稿、只有背景音乐（可在完整工作台里生成配音）；文案已按当前镜头重新排好，旧的几句话不再使用。"
+    },
+    {
+      "name": "当前项目的确有镜头引用着素材（可验关联提示）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "移出时如实说明还有几个镜头在用这些视频",
+      "ok": true,
+      "detail": "<app.ui.wizard.WizardWindow(0x2c440bac620) at 0x000002C440B75800> 确认移出 把「IMG_7520整体+细节.MOV」从这个项目里移出？\n\n只移出项目里的记录，不会删除你电脑上的原视频文件。\n\n如实说明：还有 3 个"
+    },
+    {
+      "name": "移出后原视频仍在磁盘上",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "changed_files": [
+    "app_core_final_exporter.py",
+    "app_core_subtitle.py",
+    "app_core_video_editor.py",
+    "app_db.py",
+    "app_ui_main_window.py",
+    "app_ui_wizard.py",
+    "使用说明.md"
+  ],
+  "exports": [
+    "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\一键出片_参考片风格_20261121_222705.mp4",
+    "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\一键出片_标准模式_1795271231.mp4"
+  ]
+}

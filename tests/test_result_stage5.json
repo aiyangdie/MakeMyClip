@@ -1,0 +1,179 @@
+{
+  "stage": 5,
+  "passed": 34,
+  "total": 34,
+  "results": [
+    {
+      "name": "建立真实镜头时间线",
+      "pass": true,
+      "detail": "12 个镜头"
+    },
+    {
+      "name": "空资料时提示补全",
+      "pass": true,
+      "detail": "['商品名称', '颜色', '材质']"
+    },
+    {
+      "name": "空资料时文案无编造参数",
+      "pass": true,
+      "detail": "文案只含中性描述"
+    },
+    {
+      "name": "空资料标题标注未填",
+      "pass": true,
+      "detail": "商品展示（未填写商品名称）"
+    },
+    {
+      "name": "填商品名后进文案",
+      "pass": true,
+      "detail": "整体/收尾镜头引用真实名称"
+    },
+    {
+      "name": "高风险参数进提醒而非文案",
+      "pass": true,
+      "detail": "warnings=['承重参数（需确认来源真实，未确认则不写入文案）']"
+    },
+    {
+      "name": "文案入库",
+      "pass": true,
+      "detail": "4 句"
+    },
+    {
+      "name": "缺素材镜头不产生字幕行",
+      "pass": true,
+      "detail": "字幕4行 / 有素材镜头4个"
+    },
+    {
+      "name": "字幕时间按成片顺序累计",
+      "pass": true,
+      "detail": "首行0ms，逐行接续：[0, 3000, 6000, 9000]"
+    },
+    {
+      "name": "单句编辑生效",
+      "pass": true,
+      "detail": "文字与时间都改了"
+    },
+    {
+      "name": "TTS 为本地离线",
+      "pass": true,
+      "detail": "本地中文语音（Windows 离线·不上传）"
+    },
+    {
+      "name": "存在中文语音",
+      "pass": true,
+      "detail": "['Microsoft Huihui Desktop - Chinese (Simplified)', 'Microsoft Zira Desktop - English (United States)']"
+    },
+    {
+      "name": "所有句子都合成出配音",
+      "pass": true,
+      "detail": "4/4 句"
+    },
+    {
+      "name": "配音缓存命中",
+      "pass": true,
+      "detail": "相同文案不重复合成"
+    },
+    {
+      "name": "配音文件可解码",
+      "pass": true,
+      "detail": "3160ms"
+    },
+    {
+      "name": "SRT 生成",
+      "pass": true,
+      "detail": "4 条"
+    },
+    {
+      "name": "SRT 含中文字幕文本",
+      "pass": true,
+      "detail": "中文正常写入"
+    },
+    {
+      "name": "无声成片渲染",
+      "pass": true,
+      "detail": "新生成0 缓存4"
+    },
+    {
+      "name": "无声成片拼接",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "无声成片可解码",
+      "pass": true,
+      "detail": "720x1280 12000ms"
+    },
+    {
+      "name": "测试音乐生成",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "旁白轨合成且时长对齐视频",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "旁白轨覆盖视频全长",
+      "pass": true,
+      "detail": "旁白12000ms vs 视频12000ms"
+    },
+    {
+      "name": "三轨全开最终成片",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "最终成片可解码且时长正确",
+      "pass": true,
+      "detail": "720x1280 12000ms 音轨=True"
+    },
+    {
+      "name": "最终成片带音轨",
+      "pass": true,
+      "detail": "音轨存在"
+    },
+    {
+      "name": "关旁白仍能导出且时长正确",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "关音乐仍能导出且时长正确",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "关字幕仍能导出且时长正确",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "全关仍能导出且时长正确",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "重开后文案行恢复",
+      "pass": true,
+      "detail": "4 句"
+    },
+    {
+      "name": "重开后单句编辑保留",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "重开后商品资料保留",
+      "pass": true,
+      "detail": "{'name': '带灯床头柜', 'color': '白色', 'material': '', 'scene': '卧室', 'selling': '', 'load_bearing': '50kg'}"
+    },
+    {
+      "name": "重开后配音路径保留",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "final_video": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段五_三轨全开.mp4",
+  "silent_video": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\_stage5_silent.mp4"
+}

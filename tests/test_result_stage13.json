@@ -1,0 +1,429 @@
+{
+  "stage": 13,
+  "total": 81,
+  "passed": 81,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "改前已整包备份（19 个文件，含哈希基线）",
+      "ok": true,
+      "detail": "19 个"
+    },
+    {
+      "name": "每个备份都能对应到现存真实文件",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "改动范围只限「向导界面 + 使用说明追加」",
+      "ok": true,
+      "detail": "['app_ui_wizard.py', '使用说明.md']"
+    },
+    {
+      "name": "出片、字幕、渲染、导出、旧工作台、桌面启动器字节级未动",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "《使用说明》原文逐字保留（只增不改，一行不丢）",
+      "ok": true,
+      "detail": "原文524行 → 现549行"
+    },
+    {
+      "name": "v13.0 增补打在原文之后、带版本标记",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "v12.0 增补仍在（没被覆盖）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "出片核心 ExportWorker 整段字节级未改",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "数据/交互逻辑只改了 6 处「取色方式」，行为未变",
+      "ok": true,
+      "detail": "13 行 diff / 增6 删7"
+    },
+    {
+      "name": "这 6 处全部改为走统一主题 self._style()",
+      "ok": true,
+      "detail": "['+            card.setStyleSheet(self._style(\"card_miss\" if missing else \"card\"))', '+                pic.setStyleSheet(self._style(\"missing_pic\"))']"
+    },
+    {
+      "name": "删掉的 7 行里 6 行是硬编码 setStyleSheet、1 行只是它的续行（未碰其它逻辑）",
+      "ok": true,
+      "detail": "['-            card.setStyleSheet(_CARD_MISS if missing else _CARD)', '-                pic.setStyleSheet(\"color:#854F0B;font-size:12px;background:#F5DFC0;\")']"
+    },
+    {
+      "name": "出片撞名自动加序号仍在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "向导仍接统一文案入口 wizard_lines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "新增统一设计主题文件",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题文件写明出处/许可「Material」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题文件写明出处/许可「shadcn」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题文件写明出处/许可「CC BY 4.0」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题文件写明出处/许可「Apache 2.0」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题文件写明出处/许可「MIT」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "亮暗两套色值确实不同",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "浅色与深色都能生成合法 QSS",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "主题提供语义命名而非具体色名",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "向导界面已清除散落硬编码颜色（只剩字幕白字 1 处）",
+      "ok": true,
+      "detail": "['#FFFFFF']"
+    },
+    {
+      "name": "字幕白字属于出片样式、不在界面层",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "没有引入任何第三方界面库",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "PySide6 版本没有被要求降级",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "仍是五步向导",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "顶部是 5 个小圆点进度（不是一排大按钮）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "进度条显示「第 N / 5 步」和当前步名",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "有亮/暗切换按钮",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "第 1 步有一个大标题",
+      "ok": true,
+      "detail": "['第 1 步 · 把视频放进来']"
+    },
+    {
+      "name": "第 1 步有一个主动作大按钮",
+      "ok": true,
+      "detail": "['选一个文件夹']"
+    },
+    {
+      "name": "第 2 步有一个大标题",
+      "ok": true,
+      "detail": "['第 2 步 · 挑镜头']"
+    },
+    {
+      "name": "第 2 步有一个主动作大按钮",
+      "ok": true,
+      "detail": "['就用这些镜头，下一步 →']"
+    },
+    {
+      "name": "第 3 步有一个大标题",
+      "ok": true,
+      "detail": "['第 3 步 · 节奏']"
+    },
+    {
+      "name": "第 3 步有一个主动作大按钮",
+      "ok": true,
+      "detail": "['就这样，下一步 →']"
+    },
+    {
+      "name": "第 4 步有一个大标题",
+      "ok": true,
+      "detail": "['第 4 步 · 字幕和声音']"
+    },
+    {
+      "name": "第 4 步有一个主动作大按钮",
+      "ok": true,
+      "detail": "['不改，用这版 →', '保存文案']"
+    },
+    {
+      "name": "第 5 步有一个大标题",
+      "ok": true,
+      "detail": "['第 5 步 · 出片']"
+    },
+    {
+      "name": "第 5 步有一个主动作大按钮",
+      "ok": true,
+      "detail": "['一键出片']"
+    },
+    {
+      "name": "一键切换深色：QSS 真的变了",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "深色按钮文案变成「浅色界面」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "再按一次回到浅色",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "第 1 步分组/次要入口默认收起，不碍眼",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "第 4 步画面比例默认收起",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「缓存复用」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「可解码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「crf」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「帧率」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「编码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术黑话「xfade」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "15 段真实素材缩略图仍在",
+      "ok": true,
+      "detail": "15"
+    },
+    {
+      "name": "按真实文件夹分出多个组",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "素材卡片仍是「只拖出」，能拖到分组",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "仍是多选（能全选/批量移出）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "拖拽数据仍是真实素材路径",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "挑镜头列表 13 段",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "第 3 步 13 张真实镜头卡片",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "字幕表仍是 13 行且第 3 列可编辑",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "保存/恢复默认文案按钮都在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "新建项目、真实步骤、上次停在、完整工作台入口都在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "「已完成步骤」按真实记录算，不是写死全做完",
+      "ok": true,
+      "detail": "真实=0 计算=0 状态={4: True}"
+    },
+    {
+      "name": "空项目不会假装前 4 步都做完",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "没真正走过步骤时，不谎称「上次停在第 N 步」",
+      "ok": true,
+      "detail": "从第 1 步开始"
+    },
+    {
+      "name": "真走过步骤后，「上次停在第 N 步」按记录显示步号与步名",
+      "ok": true,
+      "detail": "上次停在第 3 步「看片调整」"
+    },
+    {
+      "name": "界面能正确显示商品名（用干净临时项目验证，不动演示库）",
+      "ok": true,
+      "detail": "做一条商品视频 · 带灯床头柜"
+    },
+    {
+      "name": "演示库项目名污染与本次无关：新旧 _load_project 字节级一致",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "拖放区仍接受拖放",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "权限错误仍翻译成人话",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "解码错误仍翻译成人话",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "展开文件夹能力仍在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "真实一键出片仍成功",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "你改的字仍进了成片字幕",
+      "ok": true,
+      "detail": "﻿1 | 00:00:00,000 --> 00:00:02,597 | 手抚柜面近景 |  | 2 | 00:00:02,597 --> 00:00:04,196 | 台面细节 |  | 3 | 00:00:04,196 --> 00"
+    },
+    {
+      "name": "成片仍是 3:4 竖版 720x960",
+      "ok": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "成片时长仍在 15-30 秒",
+      "ok": true,
+      "detail": "29670"
+    },
+    {
+      "name": "成片含音轨且可解码",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "导出文件名带时间戳",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "旧成片没被覆盖（新片另存）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "结果显示完整存放路径",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "13 个已确认镜头逐行未变",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "原素材一个都没被删改",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "changed_files": [
+    "app_ui_wizard.py",
+    "使用说明.md"
+  ],
+  "exports": [
+    "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\一键出片_参考片风格_20261121_222720.mp4"
+  ],
+  "screenshots": [
+    "gui_stage13_step1_import.png",
+    "gui_stage13_step1_import_dark.png",
+    "gui_stage13_step2_pick.png",
+    "gui_stage13_step3_shots.png",
+    "gui_stage13_step4_labels.png",
+    "gui_stage13_step4_labels_dark.png",
+    "gui_stage13_step5_export.png"
+  ]
+}

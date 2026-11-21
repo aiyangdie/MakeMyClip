@@ -1,0 +1,107 @@
+{
+  "stage": 6,
+  "total": 19,
+  "passed": 19,
+  "results": [
+    {
+      "name": "模板含 linked_shots 定义",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动理由声明为真实画面无虚构",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动含按下与变换两个真实子片段",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "短镜头(1.5s)渲染成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "补足后时长达到约3.5s",
+      "pass": true,
+      "detail": "3.50s"
+    },
+    {
+      "name": "仍是竖屏不拉伸",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "改最短停留会改变缓存标识",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动镜头正确写入 sub_segments",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动镜头渲染成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动镜头时长≈按下3.5s+灯变9s-叠化0.4s",
+      "pass": true,
+      "detail": "12.10s"
+    },
+    {
+      "name": "A版硬切成片成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B版叠化+停留成片成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "C版(含按钮联动)成片成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "A版可解码且尺寸正确",
+      "pass": true,
+      "detail": "48.1s 720x1280"
+    },
+    {
+      "name": "B版可解码且尺寸正确",
+      "pass": true,
+      "detail": "48.5s 720x1280"
+    },
+    {
+      "name": "C版可解码且尺寸正确",
+      "pass": true,
+      "detail": "51.6s 720x1280"
+    },
+    {
+      "name": "只有联动镜头这一行发生变化",
+      "pass": true,
+      "detail": "变化位置=[8]"
+    },
+    {
+      "name": "其它镜头素材/时间/子片段完全不变",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "锁定后联动镜头也拒绝修改",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "outputs": {
+    "A": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段六_A_原样硬切.mp4",
+    "B": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段六_B_叠化停留.mp4",
+    "C": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段六_C_叠化停留按钮联动.mp4"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "product_type": "带灯床头柜",
+  "version": "1.0",
+  "note": "分镜与镜头标签的对应关系全部配置在此，不写死在代码里。更换商品类别时复制本文件修改即可。required_cues 中的任一 cue 命中即视为内容相关；视觉证据不足时一律标需人工核验，不得自动确认。",
+  "cue_aliases": {
+    "三色温切换": ["color_temperature", "light_switch"],
+    "灯光变化": ["color_temperature", "light_states", "light_switch"],
+    "抽屉开合": ["reciprocating", "motion"],
+    "开合动作": ["reciprocating", "motion"],
+    "旋转": ["reciprocating", "motion"],
+    "调节": ["reciprocating", "motion"],
+    "开关按钮": ["hand", "motion"],
+    "整体视角": ["subject_whole"],
+    "近景特写": ["subject_close"]
+  },
+  "storyboards": [
+    {"name": "产品整体亮相", "required_cues": ["subject_whole"], "allow_missing": false, "min_quality": 55,
+     "advice": "补拍：稳定展示床头柜完整正面，主体居中占画面 60-75%。"},
+    {"name": "台面材质和边缘", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 55,
+     "advice": "补拍：沿台面边缘缓慢横移，突出厚度与材质；材质名称需人工在画面确认，程序不臆测。"},
+    {"name": "拉手特写", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 55,
+     "advice": "补拍：拉手正面近景，手动对焦清晰。拉手是否为金属等材质需人工确认。"},
+    {"name": "抽屉开合", "required_cues": ["reciprocating"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：一镜到底完整展示拉开到关闭全过程，手离开后停留 1 秒。"},
+    {"name": "抽屉内部", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：抽屉拉开后俯拍内部空间，均匀照亮。"},
+    {"name": "柜脚和底部", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：低机位展示柜脚形状与离地高度。"},
+    {"name": "灯杆调节", "required_cues": ["reciprocating"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：完整展示灯杆升降/伸缩动作。若素材中并未出现灯杆调节，必须标记缺失，不得用静态灯杆冒充。"},
+    {"name": "灯头旋转", "required_cues": ["reciprocating"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：完整展示手握灯头旋转的过程。若仅有静态灯头画面，不得冒充旋转展示。"},
+    {"name": "三色温切换", "required_cues": ["light_switch"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：固定机位依次切换三种灯光并各停留 1.5 秒。若只拍到两种状态，标记需人工确认，不得认定三色温。"},
+    {"name": "灯罩细节", "required_cues": ["subject_close"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：灯罩近景。材质与结构需人工确认，程序不臆测。"},
+    {"name": "实体开关按钮", "required_cues": ["hand"], "allow_missing": true, "min_quality": 50,
+     "advice": "补拍：手指按压开关的动作近景，展示按钮位置与操作反馈。"},
+    {"name": "整体收尾", "required_cues": ["subject_whole"], "allow_missing": false, "min_quality": 55,
+     "advice": "补拍：与开场不同的稳定整体画面，作为结尾定格。"}
+  ],
+  "linked_shots": [
+    {
+      "name": "按钮触发三色灯",
+      "replaces": ["实体开关按钮", "三色温切换"],
+      "reason": "真实素材 IMG_7530 逐帧核验：0-2s 手按侧面开关、4-13s 灯罩暖黄/白切换，二者先后拍摄无同框。按因果顺序前后衔接（中间短叠化），观众看到'一按灯就变'，全部为真实画面，无虚构。",
+      "sub_transition_s": 0.4,
+      "segments": [
+        {"role": "按下开关", "asset_hint": "IMG_7530三色灯切换.MOV", "start_ms": 0, "end_ms": 2000},
+        {"role": "灯光变换", "asset_hint": "IMG_7530三色灯切换.MOV", "start_ms": 4000, "end_ms": 13000}
+      ]
+    }
+  ],
+  "shot_targets": {
+    "_note": "【阶段七增补】每镜头建议时长(毫秒)，按淘宝主图视频规范分配：时长3-60秒允许、最佳15-30秒、前3秒抓眼球。总目标约27秒：开场4s·台面2.5s·抽屉5s·灯头4s·按钮联动(按下2.5s+灯变7.5s-叠化0.4s)·收尾4s。素材比它短->末帧定格补足；比它长->只取需要的部分。0=不限。界面时间线页每个镜头可单独改。",
+    "产品整体亮相": 4000,
+    "台面材质和边缘": 2500,
+    "拉手特写": 2000,
+    "抽屉开合": 5000,
+    "抽屉内部": 2500,
+    "柜脚和底部": 2000,
+    "灯杆调节": 3000,
+    "灯头旋转": 4000,
+    "三色温切换": 6000,
+    "灯罩细节": 2500,
+    "实体开关按钮": 2500,
+    "整体收尾": 4000,
+    "按钮触发三色灯:按下开关": 2500,
+    "按钮触发三色灯:灯光变换": 7500
+  }
+}

@@ -1,0 +1,40 @@
+# ===== 环境与依赖（体积大，可重建）=====
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# ===== 运行产物（缓存/导出，可重建）=====
+cache/
+exports/
+logs/
+*.log
+
+# ===== 数据库文件（用户真实工程数据，不入库）=====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# ===== 临时/下载/系统文件 =====
+*.crdownload
+*.tmp
+*.bak
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ===== 大型交付包/压缩包 =====
+*.zip
+*.rar
+*.7z
+
+# ===== 手工备份目录（快照/后悔药，不进版本基线）=====
+backups/
+
+# ===== 测试截图（可选，体积占用）=====
+tests/gui_*.png

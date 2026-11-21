@@ -1,0 +1,75 @@
+{
+  "stage": "7-audio",
+  "total": 13,
+  "passed": 13,
+  "results": [
+    {
+      "name": "文案行数=有画面镜头数",
+      "pass": true,
+      "detail": "6 行"
+    },
+    {
+      "name": "材质未填被如实提醒(不编造)",
+      "pass": true,
+      "detail": "['材质']"
+    },
+    {
+      "name": "文案不含未填写的具体参数",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "每句配音合成成功",
+      "pass": true,
+      "detail": "6/6 句"
+    },
+    {
+      "name": "旁白轨合成成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "字幕生成成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "首句字幕覆盖开场 0-4s",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "音乐垫合成成功",
+      "pass": true,
+      "detail": "27.6s 无版权程序合成"
+    },
+    {
+      "name": "最终成片合成成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "时长与无声版一致(27.1s)",
+      "pass": true,
+      "detail": "27.10s vs 27.10s"
+    },
+    {
+      "name": "视频流仍为3:4 (720x960)",
+      "pass": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "含音频轨(旁白+音乐)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "无声版未被改动(非破坏)",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "outputs": {
+    "final": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段七_最终三轨成片.mp4"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "stage": 9,
+  "total": 12,
+  "pass": 12,
+  "ok": true,
+  "results": [
+    {
+      "name": "真实素材全部存在且登记入库",
+      "ok": true,
+      "note": "11 条（按钮联动素材 P7530 沿用原有）"
+    },
+    {
+      "name": "新增分镜并只补1行时间线",
+      "ok": true,
+      "note": "新建 1 行"
+    },
+    {
+      "name": "触摸柜面质感镜头已在时间线",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "13个镜头全部有真实素材/联动片段",
+      "ok": true,
+      "note": "13 行，0 缺失"
+    },
+    {
+      "name": "四个点名镜头均绑定复查后的真实特写",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "所有绑定素材文件真实存在",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "改单镜头建议时长不影响其它12行",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "未确认导出仍被拒绝",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "确认后真实导出成功",
+      "ok": true,
+      "note": "29.67s 720x960"
+    },
+    {
+      "name": "成片总长压进淘宝最佳区间(<=30s)",
+      "ok": true,
+      "note": "29.67s"
+    },
+    {
+      "name": "13个镜头全部渲染、0缺失跳过",
+      "ok": true,
+      "note": "跳过 0 个"
+    },
+    {
+      "name": "3:4竖版720x960",
+      "ok": true,
+      "note": ""
+    }
+  ],
+  "output": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段九_全镜头补齐.mp4",
+  "duration_s": 29.67
+}

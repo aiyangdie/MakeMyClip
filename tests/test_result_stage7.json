@@ -1,0 +1,130 @@
+{
+  "stage": 7,
+  "total": 24,
+  "passed": 24,
+  "results": [
+    {
+      "name": "模板含 shot_targets 默认节奏",
+      "pass": true,
+      "detail": "14 个镜头"
+    },
+    {
+      "name": "3:4 比例已加入导出选项",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "3:4 尺寸正确(720p=720x960)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "全局兜底停留默认已改为0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "模板默认节奏已套用到分镜",
+      "pass": true,
+      "detail": "套用 12 个"
+    },
+    {
+      "name": "重复套用不覆盖手动改过的值",
+      "pass": true,
+      "detail": "手动值 12345ms 保留"
+    },
+    {
+      "name": "镜头行带上模板建议时长",
+      "pass": true,
+      "detail": "整体4s/台面2.5s/抽屉5s/灯头4s/收尾4s"
+    },
+    {
+      "name": "整体镜头素材原本16.1s太长",
+      "pass": true,
+      "detail": "16.1s"
+    },
+    {
+      "name": "长素材(16.1s)按建议截短到4s",
+      "pass": true,
+      "detail": "4.00s"
+    },
+    {
+      "name": "3:4比例输出正确(720x960)",
+      "pass": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "短素材(1.5s)定格补足到2.5s",
+      "pass": true,
+      "detail": "2.50s"
+    },
+    {
+      "name": "建议时长0且兜底0 -> 保持1.5s原长",
+      "pass": true,
+      "detail": "1.50s"
+    },
+    {
+      "name": "建议时长0但全局兜底3.5s -> 补足到3.5s（阶段六行为兼容）",
+      "pass": true,
+      "detail": "3.50s"
+    },
+    {
+      "name": "只有抽屉镜头的缓存标识变化",
+      "pass": true,
+      "detail": "变化=['shot_4']"
+    },
+    {
+      "name": "其它镜头缓存标识全部不变",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "联动镜头按子片段建议时长渲染",
+      "pass": true,
+      "detail": "9.60s（预期约9.6s）"
+    },
+    {
+      "name": "成片生成成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "成片是3:4比例(720x960)",
+      "pass": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "总长落在淘宝最佳区间15-30s",
+      "pass": true,
+      "detail": "27.1s"
+    },
+    {
+      "name": "前3秒是开场整体画面（首镜头即整体亮相）",
+      "pass": true,
+      "detail": "开场建议4.0s"
+    },
+    {
+      "name": "生成文案行数=有画面镜头数",
+      "pass": true,
+      "detail": "6 行"
+    },
+    {
+      "name": "首句时长=开场建议时长4s",
+      "pass": true,
+      "detail": "4000ms"
+    },
+    {
+      "name": "联动镜头字幕时长=9.6s(按下2.5+灯变7.5-叠化0.4)",
+      "pass": true,
+      "detail": "9600ms"
+    },
+    {
+      "name": "字幕时间按成片顺序累计且无重叠",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "outputs": {
+    "final": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段七_淘宝节奏成片.mp4"
+  }
+}

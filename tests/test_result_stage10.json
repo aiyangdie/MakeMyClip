@@ -1,0 +1,176 @@
+{
+  "stage": 10,
+  "total": 33,
+  "passed": 33,
+  "results": [
+    {
+      "name": "标签行数=有画面镜头数",
+      "pass": true,
+      "detail": "13 行"
+    },
+    {
+      "name": "无任何禁用宣称(护栏)",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "不含参考片材质词(皮质/五金/碳素钢/实木/环保)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "标签为4-8字短卖点(非完整句)",
+      "pass": true,
+      "detail": "带灯床头柜/台面细节/手抚柜面/圆形拉手"
+    },
+    {
+      "name": "三种版式齐备(title/tag/big)",
+      "pass": true,
+      "detail": "['big', 'tag', 'title']"
+    },
+    {
+      "name": "首行从0开始",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "相邻字幕首尾相接(无空隙/无重叠)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "字幕总时长贴合成片(误差<0.5s)",
+      "pass": true,
+      "detail": "29.70s vs 成片 29.67s"
+    },
+    {
+      "name": "每行时长>0.2s且单调",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "按真实时长校准后末行=成片时长",
+      "pass": true,
+      "detail": "29.670s"
+    },
+    {
+      "name": "ASS 按成片真实尺寸(非写死9:16)",
+      "pass": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "含蓝紫描边色 + 白字 + 加粗",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "爱心装饰 ♥ 已写入",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "紫底大字版式 Big 存在",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "淡入淡出 \\fad 生效(花括号未被转义)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BGM 合成成功且为无版权本地源",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BGM 时长覆盖成片",
+      "pass": true,
+      "detail": "30.0s"
+    },
+    {
+      "name": "BGM 含音频轨",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BGM 能量平稳(无念稿式大起伏)",
+      "pass": true,
+      "detail": "std/mean=0.22"
+    },
+    {
+      "name": "参考片风格成片合成成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "时长与无声版一致",
+      "pass": true,
+      "detail": "29.67s"
+    },
+    {
+      "name": "仍为3:4 (720x960)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "含BGM音轨、无旁白(单一轨)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "轨道标记 narration=False/music=True",
+      "pass": true,
+      "detail": "{'narration': False, 'music': True, 'duck': False}"
+    },
+    {
+      "name": "SRT 为卖点短标签(与烧录一致)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "标准文案为完整句",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "标准ASS无爱心/无卖点预设",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "中文旁白仍可合成(回退可用)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "标准模式三轨成片成功(旁白+字幕+音乐)",
+      "pass": true,
+      "detail": " {'narration': True, 'music': True, 'duck': True}"
+    },
+    {
+      "name": "无声成片未被改动",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "历史成片全部保留",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "改单条字幕不影响其他行",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "锁定镜头数据在时间线中完好",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "outputs": {
+    "badge": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段十_参考片风格.mp4",
+    "standard": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\阶段十_标准模式回退.mp4"
+  }
+}

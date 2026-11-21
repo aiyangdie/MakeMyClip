@@ -1,0 +1,210 @@
+{
+  "stage": "B",
+  "suite": "workshop_gui",
+  "total": 39,
+  "passed": 39,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "窗口能创建",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "三页容器就位",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "启动时停在页面一",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "窗口标题含'工作台'",
+      "ok": true,
+      "detail": "MakeMyClip 工作台 · 素材与商品信息"
+    },
+    {
+      "name": "顶栏 AI 标识写明'非 AI 理解'",
+      "ok": true,
+      "detail": "当前：基础算法测量（非 AI 理解）"
+    },
+    {
+      "name": "顶栏 AI 标识含'基础算法'",
+      "ok": true,
+      "detail": "当前：基础算法测量（非 AI 理解）"
+    },
+    {
+      "name": "空项目：素材卡数为 0",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "空项目：显示空态而不是空白",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "空项目：开始分析按钮禁用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "空项目截图",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "真实演示库存在",
+      "ok": true,
+      "detail": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\projects\\_stage9_full.db"
+    },
+    {
+      "name": "打开真实项目成功",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "项目名已显示",
+      "ok": true,
+      "detail": "阶段七端到端"
+    },
+    {
+      "name": "素材数 > 0",
+      "ok": true,
+      "detail": "26"
+    },
+    {
+      "name": "素材卡真实渲染（数量与素材数一致）",
+      "ok": true,
+      "detail": "cards=26 assets=26"
+    },
+    {
+      "name": "分组列表有内容",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "统计条有内容",
+      "ok": true,
+      "detail": "5"
+    },
+    {
+      "name": "亮色截图",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "筛选分组'单抽花纹柜子'后卡片数正确",
+      "ok": true,
+      "detail": "cards=15 expect=15"
+    },
+    {
+      "name": "切回'全部'恢复全部卡片",
+      "ok": true,
+      "detail": "26"
+    },
+    {
+      "name": "切到暗色",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "暗色下卡片仍存在",
+      "ok": true,
+      "detail": "26"
+    },
+    {
+      "name": "暗色截图",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "切回亮色",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "点卡片能选中",
+      "ok": true,
+      "detail": "{1}"
+    },
+    {
+      "name": "选中后'移除'按钮可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "再点一次取消选中",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "取消后'移除'按钮禁用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "待确认计数与库一致",
+      "ok": true,
+      "detail": "查看待确认（4） vs 4"
+    },
+    {
+      "name": "有待确认项时按钮可点 / 无则禁用",
+      "ok": true,
+      "detail": "enabled=True pend=4"
+    },
+    {
+      "name": "点'剪辑方案'会明确告知未实现（不假装能用）",
+      "ok": true,
+      "detail": "本阶段暂未实现"
+    },
+    {
+      "name": "告知后仍停在页面一",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "点'预览与导出'会明确告知未实现",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "占位页文字说明了计划内容",
+      "ok": true,
+      "detail": "本页将在阶段 C 实现"
+    },
+    {
+      "name": "1366x768 下窗口尺寸正确",
+      "ok": true,
+      "detail": "1366x768"
+    },
+    {
+      "name": "1366x768 截图",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "左右侧栏宽度之和小于窗口宽度",
+      "ok": true,
+      "detail": "488"
+    },
+    {
+      "name": "窗口套用了统一 QSS（非空）",
+      "ok": true,
+      "detail": "4404"
+    },
+    {
+      "name": "QSS 里没有残留的旧阶段色值 #2F6BEF 硬编码在界面文件里",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "screenshots": [
+    "gui_workshop_01_empty.png",
+    "gui_workshop_02_light.png",
+    "gui_workshop_03_dark.png",
+    "gui_workshop_04_1366x768.png"
+  ]
+}

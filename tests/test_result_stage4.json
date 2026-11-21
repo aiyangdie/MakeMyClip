@@ -1,0 +1,142 @@
+{
+  "stage": 4,
+  "total": 27,
+  "passed": 27,
+  "results": [
+    {
+      "name": "相同输入缓存标识一致",
+      "pass": true,
+      "detail": "5b7610e339b55c7e"
+    },
+    {
+      "name": "改起止时间后缓存标识变化",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "改导出参数后缓存标识变化",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "镜头渲染成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "竖屏尺寸正确 720x1280",
+      "pass": true,
+      "detail": "720x1280"
+    },
+    {
+      "name": "成片可解码",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "相同镜头二次渲染命中缓存",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "横屏尺寸正确 1280x720",
+      "pass": true,
+      "detail": "1280x720"
+    },
+    {
+      "name": "有素材的镜头全部渲染成功",
+      "pass": true,
+      "detail": "成功4/4（新生成0+缓存4）"
+    },
+    {
+      "name": "缺素材镜头被正确记录为错误(不编造)",
+      "pass": true,
+      "detail": "缺镜头错误 8 个，均为无素材镜头"
+    },
+    {
+      "name": "拼接成片成功",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "成片可播放/尺寸对",
+      "pass": true,
+      "detail": "720x1280 12.0s"
+    },
+    {
+      "name": "替换后镜头数不变",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "只有被替换的镜头发生变化",
+      "pass": true,
+      "detail": "变化的镜头位置=[1]"
+    },
+    {
+      "name": "被替换镜头素材确实换了",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "其它3个镜头素材/时间/顺序完全一致",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "改时间只影响1个镜头",
+      "pass": true,
+      "detail": "变化位置=[1]"
+    },
+    {
+      "name": "调序后素材引用完全不变",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "调序确实改变了顺序",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "锁定镜头的时间修改被拒绝",
+      "pass": true,
+      "detail": "start_ms=0"
+    },
+    {
+      "name": "锁定镜头的替换被拒绝",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "目标镜头修改成功(未锁定)",
+      "pass": true,
+      "detail": "shot_2"
+    },
+    {
+      "name": "改动镜头的缓存标识确实变化",
+      "pass": true,
+      "detail": "7809d826 -> 1c0310af"
+    },
+    {
+      "name": "改一个镜头后：仅该镜头重渲染，其余缓存命中",
+      "pass": true,
+      "detail": "新生成1 缓存3"
+    },
+    {
+      "name": "重开后镜头数一致",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "重开后锁定态保留",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "重开后顺序/素材一致",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "stage": 11,
+  "total": 52,
+  "passed": 50,
+  "failed": 2,
+  "checks": [
+    {
+      "name": "旧界面文件字节级未改",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "name": "旧入口 main.py 字节级未改",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "新增 wizard.py 存在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "新增 main_wizard.py 存在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "五步流程条",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "步骤页数量为5",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "默认打开第1步（导入素材）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "项目名显示商品名而非文件名",
+      "ok": true,
+      "detail": "做一条商品视频 · 带灯床头柜"
+    },
+    {
+      "name": "素材画面卡片数量>0",
+      "ok": true,
+      "detail": "15"
+    },
+    {
+      "name": "镜头列表13行",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "前4步标记已完成",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "name": "拖入文件夹能识别真实视频",
+      "ok": true,
+      "detail": "35 条"
+    },
+    {
+      "name": "拖放区接受拖放",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术词「缓存复用」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术词「可解码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术词「crf」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术词「帧率」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "界面不出现技术词「编码」",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "镜头缩略图卡片13张",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "镜头缩略图是真实抽帧文件（同素材同起点复用）",
+      "ok": true,
+      "detail": "12 张唯一画面覆盖 13 张卡片"
+    },
+    {
+      "name": "13张镜头卡片都显示真实画面",
+      "ok": true,
+      "detail": "13/13"
+    },
+    {
+      "name": "旧工作台仍为8个页面",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "一键出片执行成功",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "成片文件真实存在",
+      "ok": true,
+      "detail": "4770479"
+    },
+    {
+      "name": "成片为3:4竖版720x960",
+      "ok": true,
+      "detail": "720x960"
+    },
+    {
+      "name": "成片时长落在15-30秒",
+      "ok": true,
+      "detail": "29670"
+    },
+    {
+      "name": "成片含音轨",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "成片可解码",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "13个已确认镜头逐行未变",
+      "ok": true,
+      "detail": "13 行"
+    },
+    {
+      "name": "一键出片未减少镜头数",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "name": "测试素材原文件真实存在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "移出按钮默认不可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "选中卡片后移出按钮可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "移出后素材少一条",
+      "ok": true,
+      "detail": "15->14"
+    },
+    {
+      "name": "移出未删除磁盘原文件",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "项目记录里已无该素材",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "移出素材不动13个镜头",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "状态栏明确说明原文件未动",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "素材卡片可一次选多段",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "有全选按钮",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "一次能选中3段",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "按钮写明已选段数",
+      "ok": true,
+      "detail": "移出选中的 3 段视频"
+    },
+    {
+      "name": "待移出原文件都真实存在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "确认框写明移出3段",
+      "ok": true,
+      "detail": "<app.ui.wizard.WizardWindow(0x1883e6cdb70) at 0x000001886DAF63C0> 确认移出 把选中的 3 段视"
+    },
+    {
+      "name": "一次移走了3段",
+      "ok": true,
+      "detail": "15->12"
+    },
+    {
+      "name": "批量移出未删除任何磁盘原文件",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "批量移出后项目记录里3条都没了",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "批量移出不动13个镜头",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "批量移出状态栏写明段数",
+      "ok": true,
+      "detail": "已移出 3 段视频，电脑里的原视频没动。"
+    },
+    {
+      "name": "点全选一次选中全部",
+      "ok": true,
+      "detail": "12/12"
+    },
+    {
+      "name": "全选后按钮变「取消全选」",
+      "ok": true,
+      "detail": "取消全选"
+    },
+    {
+      "name": "再点一次全部取消选中",
+      "ok": true,
+      "detail": "0"
+    }
+  ],
+  "export": {
+    "custom_used": false,
+    "error": "",
+    "lines_source": "selling_label",
+    "missing_shots": [],
+    "note": "",
+    "ok": true,
+    "path": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\exports\\一键出片_参考片风格_20261121_222757.mp4",
+    "srt_path": "C:\\Users\\Administrator\\WorkBuddy\\2026-11-19-14-00-14\\MakeMyClip\\cache\\final\\wizard.srt",
+    "steps": [
+      {
+        "count": 13,
+        "ok": true,
+        "step": "生成SRT"
+      },
+      {
+        "ok": true,
+        "skipped": false,
+        "step": "内嵌字幕"
+      },
+      {
+        "ok": true,
+        "step": "混合音频",
+        "tracks": {
+          "duck": false,
+          "music": true,
+          "narration": false
+        }
+      },
+      {
+        "ok": true,
+        "step": "校验成片"
+      }
+    ],
+    "tracks": {
+      "duck": false,
+      "music": true,
+      "narration": false
+    },
+    "verify": {
+      "duration_ms": 29670,
+      "error": "",
+      "fps": 30.0,
+      "height": 960,
+      "ok": true,
+      "width": 720
+    }
+  }
+}
