@@ -85,24 +85,42 @@ check("保留 raw_total", cal.get("raw_total") == 65, str(cal.get("raw_total")))
 check("calibrated=True", cal.get("calibrated") is True)
 check("disclaimer 提到校准", "校准" in (cal.get("disclaimer") or ""))
 
-# ---------- 3. 六维权重模式 ----------
-print("\n[3] ≥6 条可进入 weighted")
+# ---------- 3. 共线/样本门槛：不足 MIN_WEIGHT 时保持 affine ----------
+print("\n[3] 权重门槛与共线保护")
 rows6 = []
 for i in range(8):
     base = 50 + i * 5
-    # 人造偏好：更看清晰度 — 用清晰度主导人工分
     sc = _fake_scores(base, jitter=3)
     sc["sharpness"] = min(100, base + 20)
     human = int(0.6 * sc["sharpness"] + 0.4 * base)
     rows6.append(_clip_row(i + 1, sc, human, base))
 model6 = score_calibrator.fit_calibration(score_calibrator.collect_labeled_examples(rows6))
 check("8 条样本 ok", model6.get("ok") is True)
-check("mode 为 affine 或 weighted", model6.get("mode") in ("affine", "weighted"),
-      model6.get("mode"))
+check("8 条不足权重门槛 → affine", model6.get("mode") == "affine", model6.get("mode"))
 
-# ---------- 4. quality_scorer 接入 calibration 参数（无视频时测 apply 路径） ----------
+# 自动分全相同：不得爆炸斜率
+same_auto = [
+    _clip_row(1, _fake_scores(70), 80, 70),
+    _clip_row(2, _fake_scores(70), 85, 70),
+    _clip_row(3, _fake_scores(70), 75, 70),
+]
+m_same = score_calibrator.fit_calibration(score_calibrator.collect_labeled_examples(same_auto))
+check("同 auto 仍 ok", m_same.get("ok") is True)
+check("同 auto 斜率不爆炸", abs(m_same.get("a", 99)) <= score_calibrator.MAX_AFFINE_SLOPE + 1e-6,
+      f"a={m_same.get('a')}")
+
+# disclaimer 不重复叠加
+d1 = score_calibrator.apply_calibration(dict(raw), None)
+d2 = score_calibrator.apply_calibration(dict(d1), None)
+check("disclaimer 不重复",
+      (d2.get("disclaimer") or "").count("尚未用人评分校准") == 1,
+      d2.get("disclaimer"))
+
+# ---------- 4. apply_calibration 空模型 ----------
 print("\n[4] apply_calibration 空模型不改分")
-unchanged = score_calibrator.apply_calibration(dict(raw), None)
+unchanged = score_calibrator.apply_calibration(
+    {"ok": True, "scores": _fake_scores(65), "total": 65, "raw_total": 65,
+     "grade": "需要人工检查", "detail": {}, "disclaimer": "x"}, None)
 check("无模型不改 total", unchanged["total"] == 65)
 check("无模型 calibrated=False", unchanged.get("calibrated") is False)
 
@@ -139,6 +157,11 @@ for i, (auto, human) in enumerate([(60, 72), (70, 82), (80, 92)]):
     ok, msg, m = db.save_human_rating(cid, human, note=f"label-{i}")
     check(f"保存人工分#{i+1}", ok, msg)
 
+# 默认不改核验状态
+c_chk = next(c for c in db.get_clips() if c["id"] == cids[0])
+check("打分不强制已确认", c_chk.get("analysis_status") == "待核验",
+      str(c_chk.get("analysis_status")))
+
 model_db = db.get_score_calibration()
 check("DB 中校准 ok", bool(model_db and model_db.get("ok")), str(model_db))
 check("settings 可重读", db.get_score_calibration().get("n_samples") == 3)
@@ -149,17 +172,39 @@ c0 = next(c for c in db2.get_clips() if c["id"] == cids[0])
 check("重开后 human_rating 仍在", c0.get("human_rating") == 72, str(c0.get("human_rating")))
 check("重开后校准仍在", bool(db2.get_score_calibration() and db2.get_score_calibration().get("ok")))
 
-# 校准后 quality_total 应被刷新（接近 human）
+# 校准后 quality_total 应被刷新（接近 human）；raw=70 保持
 c1 = next(c for c in db2.get_clips() if c["id"] == cids[1])
 check("校准后质量分靠近人工分", abs(int(c1.get("quality_total") or 0) - 82) <= 8,
       f"quality_total={c1.get('quality_total')} human=82 raw={c1.get('quality_raw_total')}")
+check("raw_total 不被校准分覆盖", int(c1.get("quality_raw_total")) == 70,
+      str(c1.get("quality_raw_total")))
+
+# raw==0 合法：不应被当成缺失去吃校准 total
+cid0 = db.add_clip({
+    "storyboard_id": None, "asset_id": aid, "start_ms": 9000, "end_ms": 9900,
+    "primary_tag": "", "confidence": 0.5, "score_text": "", "recommend_reason": "",
+    "potential_issue": "", "verify_state": "待核验", "source": "auto_scene",
+    "keyframe_paths": "[]", "cut_reason": "", "shot_index": 9, "analysis_status": "待核验",
+})
+sc0 = _fake_scores(0)
+db.save_semantic(cid0, {"ok": True, "labels": [], "metrics": {}, "review_reasons": []},
+                 {"ok": True, "scores": sc0, "total": 0, "raw_total": 0,
+                  "grade": "不推荐", "detail": {d: "" for d in quality_scorer.DIMENSIONS}})
+db.reapply_calibration_to_clips(db.get_score_calibration())
+c_zero = next(c for c in db.get_clips() if c["id"] == cid0)
+check("raw=0 仍保留为 0", int(c_zero.get("quality_raw_total")) == 0,
+      str(c_zero.get("quality_raw_total")))
 
 # ---------- 6. matcher 优先人工分 ----------
 print("\n[6] matcher 用人分作质量")
 clip_h = {"human_rating": 95, "quality_total": 40, "score_text": ""}
 clip_a = {"human_rating": None, "quality_total": 88, "score_text": "总分88(良好)｜"}
+clip_bad = {"human_rating": "xx", "quality_total": 55, "score_text": ""}
+clip_zero = {"human_rating": 0, "quality_total": 90, "score_text": ""}
 check("有人工分时用 95", storyboard_matcher._parse_quality(clip_h) == 95)
 check("无人工分时用 quality_total", storyboard_matcher._parse_quality(clip_a) == 88)
+check("脏人分回退自动分", storyboard_matcher._parse_quality(clip_bad) == 55)
+check("人工分 0 有效", storyboard_matcher._parse_quality(clip_zero) == 0)
 
 # ---------- 汇总 ----------
 passed = sum(1 for r in RESULTS if r["pass"])

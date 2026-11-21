@@ -52,9 +52,12 @@ def _cues_of(clip):
 def _parse_quality(clip):
     # 有人工评分时直接用人分（标签优先）；否则用校准后的自动分 quality_total
     hr = clip.get("human_rating")
-    if hr is not None:
+    if hr is not None and hr != "":
         try:
-            return int(hr)
+            val = int(hr)
+            if 0 <= val <= 100:
+                return val
+            # 超出范围：当脏数据，回退自动分（不静默当成超大/负数参与排序）
         except (TypeError, ValueError):
             pass
     sj = clip.get("score_text") or ""  # 兼容：质量明细存 score_text
@@ -64,7 +67,10 @@ def _parse_quality(clip):
         import re
         m = re.search(r"总分(\d+)", sj)
         total = int(m.group(1)) if m else 0
-    return int(total or 0)
+    try:
+        return int(total)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _duration_ok(clip, lo=1.5, hi=12.0):
